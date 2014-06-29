@@ -1,4 +1,4 @@
-package com.latupa.stock;
+package com.latupa.fx;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,6 +12,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeMap;
 
@@ -90,15 +91,13 @@ public class BTCData {
 	
 	public static final Log log = LogFactory.getLog(BTCData.class);
 	
-	//记录最近一个K线周期的数值
-	public BTCDSliceRecord btc_s_record = new BTCDSliceRecord();
+	//记录最近一个K线周期的数值<pair, record>
+	public HashMap<String, BTCDSliceRecord> btc_s_record_map = new HashMap<String, BTCDSliceRecord>();
+//	public BTCDSliceRecord btc_s_record = new BTCDSliceRecord();
 	
-	//记录运行时间内的所有K线周期数据
-	public TreeMap<String, BTCTotalRecord> b_record_map = new TreeMap<String, BTCTotalRecord>();
-	
-	//BTC行情接口
-//	public static final String URL_PRICE = "https://www.okcoin.com/api/ticker.do?symbol=ltc_cny";
-	public static final String URL_PRICE = "https://www.okcoin.com/api/ticker.do";
+	//记录运行时间内的所有K线周期数据<pair, <date, record>>
+	public HashMap<String, TreeMap<String, BTCTotalRecord>> b_record_map_map = new HashMap<String, TreeMap<String, BTCTotalRecord>>();
+//	public TreeMap<String, BTCTotalRecord> b_record_map = new TreeMap<String, BTCTotalRecord>();
 	
 	//数据库连接
 	public DBInst dbInst;  
@@ -107,9 +106,10 @@ public class BTCData {
 	public static final String FLAG_FILE_DIR = "src/main/resources/";
 	public static final String dbconf_file = "db.flag";
 	
-	public static final String BTC_PRICE_TABLE = "btc_price";
-	public static final String BTC_TRANS_TABLE = "btc_trans";
+	public static final String BTC_PRICE_TABLE = "oanda_price";
+	public static final String BTC_TRANS_TABLE = "oanda_trans";
 	
+	//K线周期
 	public int data_cycle;
 	
 	//用于生成伪随机值
@@ -123,24 +123,34 @@ public class BTCData {
 	public TreeMap<String, BTCTotalRecord> btc_mock_map = new TreeMap<String, BTCTotalRecord>();
 	public Iterator<String> btc_mock_it;
 	
-	public BTCData(int data_cycle) {
+	public BTCData(int data_cycle, ArrayList<String> pairs_list) {
 		this.data_cycle = data_cycle;
+		
 		this.dbInst	= ConnectDB();
-		DBInit();
-		BTCSliceRecordInit();
+		
+		for (String pair : pairs_list) {
+			btc_s_record_map.put(pair, new BTCDSliceRecord());
+			b_record_map_map.put(pair, new TreeMap<String, BTCTotalRecord>());
+			DBInit(pair);
+			BTCSliceRecordInit(pair);
+		}
+		
 		this.price_mock = 0;
 	}
 	
-	public synchronized void BTCSliceRecordInit() {
-		this.btc_s_record.high	= 0;
-		this.btc_s_record.low	= 0;
-		this.btc_s_record.open	= 0;
-		this.btc_s_record.close	= 0;
-		this.btc_s_record.init_flag	= true;
+	public synchronized void BTCSliceRecordInit(String pair) {
+		
+		BTCDSliceRecord s_record = btc_s_record_map.get(pair);
+		
+		s_record.high	= 0;
+		s_record.low	= 0;
+		s_record.open	= 0;
+		s_record.close	= 0;
+		s_record.init_flag	= true;
 	}
 	
-	public void DBInit() {
-		String sql = "create table if not exists " + BTC_PRICE_TABLE + "__" + this.data_cycle + 
+	public void DBInit(String pair) {
+		String sql = "create table if not exists " + BTC_PRICE_TABLE + "_" + pair + "__" + this.data_cycle + 
 			"(`time` DATETIME not null default '0000-00-00 00:00:00', " +
 				"`open` double NOT NULL default '0', " +
 				"`close` double NOT NULL default '0', " +
@@ -188,7 +198,7 @@ public class BTCData {
 	 * @param p_time 指定某个时间点，如果为null，则表示当前
 	 * @return
 	 */
-	public BTCTotalRecord BTCRecordOptGetByCycle(int cycle, String p_time) {
+	public BTCTotalRecord BTCRecordOptGetByCycle(int cycle, String p_time, String pair) {
 		
 		BTCTotalRecord last_record = null;
 		
@@ -196,8 +206,8 @@ public class BTCData {
 			p_time = "99991231235959";
 		}
 		
-		for (String time : this.b_record_map.headMap(p_time, true).descendingKeySet().toArray(new String[0])) {
-			last_record	= this.b_record_map.get(time);
+		for (String time : this.b_record_map_map.get(pair).headMap(p_time, true).descendingKeySet().toArray(new String[0])) {
+			last_record	= this.b_record_map_map.get(pair).get(time);
 			if (cycle == 0) {
 				return last_record;
 			}
@@ -294,9 +304,9 @@ public class BTCData {
 	 * 更新基础价格信息到DB
 	 * @param time
 	 */
-	public void BTCRecordDBInsert(String time) {
+	public void BTCRecordDBInsert(String time, String pair) {
 		
-		String sql = "insert ignore into " + BTC_PRICE_TABLE + "__" + this.data_cycle + 
+		String sql = "insert ignore into " + BTC_PRICE_TABLE + "_" + pair + "__" + this.data_cycle + 
 				"(`time`, `open`, `close`, `high`, `low`) values ('" +
 				time + "', " +
 				this.btc_s_record.open + ", " +
@@ -317,10 +327,10 @@ public class BTCData {
 	 * 更新Ma数据到DB
 	 * @param time
 	 */
-	public void BTCMaRetDBUpdate(String time) {
-		if (this.b_record_map.containsKey(time)) {
-			BTCTotalRecord record = this.b_record_map.get(time);
-			String sql = "update " + BTC_PRICE_TABLE + "__" + this.data_cycle + " set " +
+	public void BTCMaRetDBUpdate(String time, String pair) {
+		if (this.b_record_map_map.get(pair).containsKey(time)) {
+			BTCTotalRecord record = this.b_record_map_map.get(pair).get(time);
+			String sql = "update " + BTC_PRICE_TABLE + "_" + pair + "__" + this.data_cycle + " set " +
 					"ma5=" + record.ma_record.ma5 + ", " +
 					"ma10=" + record.ma_record.ma10 + ", " +
 					"ma20=" + record.ma_record.ma20 + ", " +
@@ -341,10 +351,10 @@ public class BTCData {
 	 * 更新Boll数据到DB
 	 * @param time
 	 */
-	public void BTCBollRetDBUpdate(String time) {
-		if (this.b_record_map.containsKey(time)) {
-			BTCTotalRecord record = this.b_record_map.get(time);
-			String sql = "update " + BTC_PRICE_TABLE + "__" + this.data_cycle + " set " +
+	public void BTCBollRetDBUpdate(String time, String pair) {
+		if (this.b_record_map_map.get(pair).containsKey(time)) {
+			BTCTotalRecord record = this.b_record_map_map.get(pair).get(time);
+			String sql = "update " + BTC_PRICE_TABLE + "_" + pair + "__" + this.data_cycle + " set " +
 					"upper=" + record.boll_record.upper + ", " +
 					"mid=" + record.boll_record.mid + ", " +
 					"lower=" + record.boll_record.lower + ", " +
@@ -363,10 +373,10 @@ public class BTCData {
 	 * 更新Macd数据到DB
 	 * @param time
 	 */
-	public void BTCMacdRetDBUpdate(String time) {
-		if (this.b_record_map.containsKey(time)) {
-			BTCTotalRecord record = this.b_record_map.get(time);
-			String sql = "update " + BTC_PRICE_TABLE + "__" + this.data_cycle + " set " +
+	public void BTCMacdRetDBUpdate(String time, String pair) {
+		if (this.b_record_map_map.get(pair).containsKey(time)) {
+			BTCTotalRecord record = this.b_record_map_map.get(pair).get(time);
+			String sql = "update " + BTC_PRICE_TABLE + "_" + pair + "__" + this.data_cycle + " set " +
 					"ema13=" + record.macd_record.ema13 + ", " +
 					"ema26=" + record.macd_record.ema26 + ", " +
 					"diff=" + record.macd_record.diff + ", " +
@@ -386,10 +396,10 @@ public class BTCData {
 	 * 数据库记录更新完成
 	 * @param time
 	 */
-	public void BTCDBComplete(String time) {
-		if (this.b_record_map.containsKey(time)) {
+	public void BTCDBComplete(String time, String pair) {
+		if (this.b_record_map_map.get(pair).containsKey(time)) {
 			
-			String sql = "update " + BTC_PRICE_TABLE + "__" + this.data_cycle + " set " +
+			String sql = "update " + BTC_PRICE_TABLE + "_" + pair + "__" + this.data_cycle + " set " +
 					"data_complete=1" + 
 					" where time = '" + time + "'";
 			
@@ -410,8 +420,8 @@ public class BTCData {
 	 * @return
 	 * @throws ParseException 
 	 */
-	public MacdRet BTCCalcMacd(BTCFunc btc_func, String time, int cycle_data) throws ParseException {
-		return btc_func.macd(this, time);
+	public MacdRet BTCCalcMacd(BTCFunc btc_func, String time, int cycle_data, String pair) throws ParseException {
+		return btc_func.macd(this, time, pair);
 	}
 	
 	/**
@@ -420,8 +430,8 @@ public class BTCData {
 	 * @param time
 	 * @return
 	 */
-	public BollRet BTCCalcBoll(BTCFunc btc_func, String time) {
-		return btc_func.boll(this.b_record_map, time);
+	public BollRet BTCCalcBoll(BTCFunc btc_func, String time, String pair) {
+		return btc_func.boll(this.b_record_map_map.get(pair), time);
 	}
 	
 	/**
@@ -430,7 +440,7 @@ public class BTCData {
 	 * @param time
 	 * @return
 	 */
-	public MaRet BTCCalcMa(BTCFunc btc_func, String time) {
+	public MaRet BTCCalcMa(BTCFunc btc_func, String time, String pair) {
 		ArrayList<Integer> mas = new ArrayList<Integer>();
 		mas.add(new Integer(5));
 		mas.add(new Integer(10));
@@ -439,7 +449,7 @@ public class BTCData {
 		mas.add(new Integer(60));
 		mas.add(new Integer(120));
 		
-		TreeMap<Integer, Double> ret = btc_func.ma(this.b_record_map, time, mas, 0);
+		TreeMap<Integer, Double> ret = btc_func.ma(this.b_record_map_map.get(pair), time, mas, 0);
 		
 		MaRet maret = new MaRet();
 		maret.ma5	= ret.get(5);
@@ -457,10 +467,13 @@ public class BTCData {
 	 * 更新基础价格信息到内存映射表中
 	 * @param time
 	 */
-	public void BTCRecordMemInsert(String time) {
+	public void BTCRecordMemInsert(String time, String pair) {
+		
 		if (this.btc_s_record.init_flag == false) {
 			BTCTotalRecord record = new BTCTotalRecord(this.btc_s_record);
-			this.b_record_map.put(time, record);
+			
+			TreeMap<String, BTCTotalRecord> btc_s_record_map = this.b_record_map_map.get(pair);
+			btc_s_record_map.put(time, record);
 		}
 	}
 	
@@ -469,11 +482,11 @@ public class BTCData {
 	 * @param time
 	 * @param ma_ret
 	 */
-	public void BTCMaRetMemUpdate(String time, MaRet ma_ret) {
-		if (this.b_record_map.containsKey(time)) {
-			BTCTotalRecord record = this.b_record_map.get(time);
+	public void BTCMaRetMemUpdate(String time, MaRet ma_ret, String pair) {
+		if (this.b_record_map_map.get(pair).containsKey(time)) {
+			BTCTotalRecord record = this.b_record_map_map.get(pair).get(time);
 			record.ma_record = new MaRet(ma_ret);
-			this.b_record_map.put(time, record);
+			this.b_record_map_map.get(pair).put(time, record);
 		}
 		else {
 			log.error("time " + time + " is not in mem");
@@ -486,11 +499,11 @@ public class BTCData {
 	 * @param time
 	 * @param boll_ret
 	 */
-	public void BTCBollRetMemUpdate(String time, BollRet boll_ret) {
-		if (this.b_record_map.containsKey(time)) {
-			BTCTotalRecord record = this.b_record_map.get(time);
+	public void BTCBollRetMemUpdate(String time, BollRet boll_ret, String pair) {
+		if (this.b_record_map_map.get(pair).containsKey(time)) {
+			BTCTotalRecord record = this.b_record_map_map.get(pair).get(time);
 			record.boll_record = new BollRet(boll_ret);
-			this.b_record_map.put(time, record);
+			this.b_record_map_map.get(pair).put(time, record);
 		}
 		else {
 			log.error("time " + time + " is not in mem");
@@ -503,11 +516,11 @@ public class BTCData {
 	 * @param time
 	 * @param boll_ret
 	 */
-	public void BTCMacdRetMemUpdate(String time, MacdRet macd_ret) {
-		if (this.b_record_map.containsKey(time)) {
-			BTCTotalRecord record = this.b_record_map.get(time);
+	public void BTCMacdRetMemUpdate(String time, MacdRet macd_ret, String pair) {
+		if (this.b_record_map_map.get(pair).containsKey(time)) {
+			BTCTotalRecord record = this.b_record_map_map.get(pair).get(time);
 			record.macd_record = new MacdRet(macd_ret);
-			this.b_record_map.put(time, record);
+			this.b_record_map_map.get(pair).put(time, record);
 		}
 		else {
 			log.error("time " + time + "is not in mem");
@@ -528,23 +541,28 @@ public class BTCData {
 	 * 更新BTCSliceRecord的值
 	 * @throws IOException 
 	 */
-	public synchronized void BTCSliceRecordUpdate(double last) {
+	public synchronized void BTCSliceRecordUpdate(HashMap<String, Ticker> ticker_map) {
 		
 //		double last = FetchMock();
 //		double last = FetchRT();
 //		double last = FetchRTWeb();
 		
-		if (this.btc_s_record.init_flag == true) {
-			this.btc_s_record.high	= last;
-			this.btc_s_record.low	= last;
-			this.btc_s_record.open	= last;
-			this.btc_s_record.close	= last;
-			this.btc_s_record.init_flag	= false;
-		}
-		else {
-			this.btc_s_record.high	= (last > this.btc_s_record.high) ? last : this.btc_s_record.high;
-			this.btc_s_record.low	= (last < this.btc_s_record.low) ? last : this.btc_s_record.low;
-			this.btc_s_record.close	= last;
+		for (String pair : ticker_map.keySet()) {
+			BTCDSliceRecord s_record = this.btc_s_record_map.get(pair);
+			double last = ticker_map.get(pair).ask;
+			
+			if (s_record.init_flag == true) {
+				s_record.high	= last;
+				s_record.low	= last;
+				s_record.open	= last;
+				s_record.close	= last;
+				s_record.init_flag	= false;
+			}
+			else {
+				s_record.high	= (last > s_record.high) ? last : s_record.high;
+				s_record.low	= (last < s_record.low) ? last : s_record.low;
+				s_record.close	= last;
+			}
 		}
 		
 		return;

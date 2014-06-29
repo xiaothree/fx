@@ -1,4 +1,6 @@
-package com.latupa.stock;
+package com.latupa.fx;
+
+import java.util.HashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -14,8 +16,6 @@ public class BTCUpdateThread extends Thread {
 	public static final Log log = LogFactory.getLog(BTCUpdateThread.class);
 	
 	public BTCUpdateSystem btc_update_sys;
-	
-	public BTCApi btc_api = new BTCApi();
 	
 	public BTCUpdateThread(BTCUpdateSystem btc_update_sys) {
 		this.btc_update_sys	= btc_update_sys;
@@ -50,21 +50,20 @@ public class BTCUpdateThread extends Thread {
 			if (stamp_sec >= (last_stamp_sec + this.btc_update_sys.fetch_cycle)) {
 				log.info("fetch:" + stamp_sec);
 				
-				Ticker ticker = btc_api.ApiTicker();
-				if (ticker == null) {
+				HashMap<String, Ticker> ticker_map = this.btc_update_sys.btc_api.ApiTicker();
+				if (ticker_map == null) {
 					log.info("sleep 30 sec");
 					try {
 						Thread.sleep(30000);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
-						e.printStackTrace();
+						log.error("sleep exception", e);
 					}
 				}
 				else {
-					double last = ticker.last;
 					for (int data_cycle : this.btc_update_sys.data_map.keySet()) {
 						BTCData btc_data = this.btc_update_sys.data_map.get(data_cycle);
-						btc_data.BTCSliceRecordUpdate(last);
+						btc_data.BTCSliceRecordUpdate(ticker_map);
 					}
 				}
 				

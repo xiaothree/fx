@@ -1,4 +1,4 @@
-package com.latupa.stock;
+package com.latupa.fx;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,9 +15,11 @@ public class BTCUpdateSystem {
 	//数据采集周期(s)
 	public int fetch_cycle;
 	
+	public BTCApi btc_api = new BTCApi();
+	
 	public BTCUpdateSystem(ArrayList<Integer> data_cycle_list, int fetch_cycle) {
 		for (int data_cycle : data_cycle_list) {
-			this.data_map.put(data_cycle, new BTCData(data_cycle));
+			this.data_map.put(data_cycle, new BTCData(data_cycle, this.btc_api.pairs_list));
 		}
 		
 		this.fetch_cycle = fetch_cycle;

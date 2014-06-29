@@ -1,8 +1,9 @@
-package com.latupa.stock;
+package com.latupa.fx;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 import org.apache.commons.logging.Log;
@@ -31,7 +32,7 @@ public class BTCDataProcThread extends Thread {
 	 * @param time_s 起始时间
 	 * @param time_s 结束时间
 	 */
-	public void ModifyHistoryData(String time_s, String time_e) {
+	public void ModifyHistoryData(String time_s, String time_e, String pair) {
 		//加载数据库中的历史数据到内存中
 		log.info("load data from db for cycle " + this.data_cycle);
 		this.btc_data.BTCDataLoadFromDB(0, null);
@@ -40,7 +41,7 @@ public class BTCDataProcThread extends Thread {
 		for (String time : this.btc_data.b_record_map.keySet().toArray(new String[0])) {
 			if (time.compareTo(time_s) >= 0 && time.compareTo(time_e) <= 0) {
 				log.info("proc " + time);
-				CalcFunc(time);
+				CalcFunc(time, pair);
 			}
 			
 			if (time.compareTo(time_e) > 0) {
@@ -55,29 +56,29 @@ public class BTCDataProcThread extends Thread {
 	 * 每条更新的价格记录，计算指标
 	 * @param sDateTime
 	 */
-	private void CalcFunc(String sDateTime) {
+	private void CalcFunc(String sDateTime, String pair) {
 		
 		//计算均线
-		MaRet ma_ret = this.btc_data.BTCCalcMa(this.btc_func, sDateTime);
-		this.btc_data.BTCMaRetMemUpdate(sDateTime, ma_ret);
-		this.btc_data.BTCMaRetDBUpdate(sDateTime);
+		MaRet ma_ret = this.btc_data.BTCCalcMa(this.btc_func, sDateTime, pair);
+		this.btc_data.BTCMaRetMemUpdate(sDateTime, ma_ret, pair);
+		this.btc_data.BTCMaRetDBUpdate(sDateTime, pair);
 		
 		//计算布林线
-		BollRet boll_ret = this.btc_data.BTCCalcBoll(this.btc_func, sDateTime);
-		this.btc_data.BTCBollRetMemUpdate(sDateTime, boll_ret);
-		this.btc_data.BTCBollRetDBUpdate(sDateTime);
+		BollRet boll_ret = this.btc_data.BTCCalcBoll(this.btc_func, sDateTime, pair);
+		this.btc_data.BTCBollRetMemUpdate(sDateTime, boll_ret, pair);
+		this.btc_data.BTCBollRetDBUpdate(sDateTime, pair);
 		
 		//计算Macd值
 		try {
-			MacdRet macd_ret = this.btc_data.BTCCalcMacd(this.btc_func, sDateTime, data_cycle);
-			this.btc_data.BTCMacdRetMemUpdate(sDateTime, macd_ret);
-			this.btc_data.BTCMacdRetDBUpdate(sDateTime);
+			MacdRet macd_ret = this.btc_data.BTCCalcMacd(this.btc_func, sDateTime, data_cycle, pair);
+			this.btc_data.BTCMacdRetMemUpdate(sDateTime, macd_ret, pair);
+			this.btc_data.BTCMacdRetDBUpdate(sDateTime, pair);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		this.btc_data.BTCDBComplete(sDateTime);
+		this.btc_data.BTCDBComplete(sDateTime, pair);
 	}
 	
 	public void run() {
@@ -123,30 +124,33 @@ public class BTCDataProcThread extends Thread {
 					e.printStackTrace();
 				}
 				
-				log.info("trigger cycle " + this.data_cycle);
+				for (String pair : this.btc_data.btc_s_record_map.keySet()) {
+					
+					log.info("trigger cycle:" + this.data_cycle + ", pair:" + pair);
+					
+					BTCDSliceRecord slice_record = this.btc_data.btc_s_record_map.get(pair);
 				
-				BTCDSliceRecord slice_record = this.btc_data.btc_s_record;
-				
-				if (slice_record.init_flag == false) {
-				
-					log.info("update cycle " + this.data_cycle);
-					slice_record.Show();
-
-					int curt_k_num = btc_data.b_record_map.size();
+					if (slice_record.init_flag == false) {
 					
-					log.info("new k(" + this.data_cycle + "):" + curt_k_num);
-					
-					Date cur_date = new Date(stamp_millis);
-					String sDateTime = df.format(cur_date); 
-					
-					//更新基础数值
-					this.btc_data.BTCRecordMemInsert(sDateTime);
-					this.btc_data.BTCRecordDBInsert(sDateTime);
-					this.btc_data.BTCSliceRecordInit();
-					//this.btc_trans_sys.btc_data.BTCRecordMemShow();
-					
-					CalcFunc(sDateTime);
-				}
+						log.info("update cycle " + this.data_cycle + ", pair:" + pair);
+						slice_record.Show();
+		
+						int curt_k_num = btc_data.b_record_map.size();
+						
+						log.info("new k(" + this.data_cycle + "):" + curt_k_num);
+						
+						Date cur_date = new Date(stamp_millis);
+						String sDateTime = df.format(cur_date); 
+						
+						//更新基础数值
+						this.btc_data.BTCRecordMemInsert(sDateTime, pair);
+						this.btc_data.BTCRecordDBInsert(sDateTime, pair);
+						this.btc_data.BTCSliceRecordInit(pair);
+						//this.btc_trans_sys.btc_data.BTCRecordMemShow();
+						
+						CalcFunc(sDateTime, pair);
+					}
+				}	
 			}
 			
 			last_stamp_sec = stamp_sec;
@@ -177,9 +181,10 @@ public class BTCDataProcThread extends Thread {
 		int data_cycle = Integer.parseInt(args[2]);
 		
 		System.out.println("time_s:" + time_s + ", time_e:" + time_e + ", data_cycle:" + data_cycle);
-		
-		BTCData btc_data = new BTCData(data_cycle);
+		ArrayList<String> pairs_list = new ArrayList<String>();
+		pairs_list.add("EUR_USD");
+		BTCData btc_data = new BTCData(data_cycle, pairs_list);
 		BTCDataProcThread btc_data_proc = new BTCDataProcThread(btc_data, data_cycle);
-		btc_data_proc.ModifyHistoryData(time_s, time_e);
+		btc_data_proc.ModifyHistoryData(time_s, time_e, "EUR_USD");
 	}
 }

@@ -236,13 +236,13 @@ public class BTCFunc {
 	 * @return
 	 * @throws ParseException
 	 */
-	public MacdRet macd(BTCData btc_data, String p_time) throws ParseException {
+	public MacdRet macd(BTCData btc_data, String p_time, String pair) throws ParseException {
 		int p_short = 13;
 		int p_long = 26;
 		int p_m = 9;
 		
-		BTCTotalRecord record	= btc_data.BTCRecordOptGetByCycle(0, p_time);
-		BTCTotalRecord record_1cycle_before	= btc_data.BTCRecordOptGetByCycle(1, p_time);
+		BTCTotalRecord record	= btc_data.BTCRecordOptGetByCycle(0, p_time, pair);
+		BTCTotalRecord record_1cycle_before	= btc_data.BTCRecordOptGetByCycle(1, p_time, pair);
 		
 		double ema13;
 		double ema26;
