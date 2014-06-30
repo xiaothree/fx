@@ -109,9 +109,12 @@ public class BTCDataProcThread extends Thread {
 			}
 			
 			if (stamp_sec % (24 * 60 * 60) == 0) {	//每天清理一次内存中的历史数据
-				log.info("clean cycle " + this.data_cycle);
 				
-				this.btc_data.BTCDataMemoryClean(2);
+				
+				for (String pair : this.btc_data.btc_s_record_map.keySet()) {
+					log.info("clean cycle " + this.data_cycle + ", pair:" + pair);
+					this.btc_data.BTCDataMemoryClean(2, pair);
+				}
 			}
 			
 			if (stamp_sec % this.data_cycle == 0) {	

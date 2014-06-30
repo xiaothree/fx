@@ -447,8 +447,8 @@ public class BTCApi {
 		
 		String ret = "";
 		try {
-//			ret = sendGet(URL_PRACTICE + "/v1/prices", str);
-			ret = sendGet(URL_SANDBOX + "/v1/prices", str);
+			ret = sendGet(URL_PRACTICE + "/v1/prices", str);
+//			ret = sendGet(URL_SANDBOX + "/v1/prices", str);
 		} catch (ClientProtocolException e1) {
 			// TODO Auto-generated catch block
 			log.error(e1);

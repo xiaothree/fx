@@ -20,6 +20,16 @@ public class BTCUpdateThread extends Thread {
 	public BTCUpdateThread(BTCUpdateSystem btc_update_sys) {
 		this.btc_update_sys	= btc_update_sys;
 	}
+	
+	private boolean CheckDataUpdate(HashMap<String, Ticker> last_ticker_map, HashMap<String, Ticker> ticker_map) {
+		for (String pair : last_ticker_map.keySet()) {
+			if (last_ticker_map.get(pair).time.equals(ticker_map.get(pair).time)) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
 
 	public void run() {
 		
@@ -42,6 +52,7 @@ public class BTCUpdateThread extends Thread {
 		}
 		
 		long last_stamp_sec = 0;
+		HashMap<String, Ticker> last_ticker_map = null;
 		
 		while (true) {
 			
@@ -51,7 +62,8 @@ public class BTCUpdateThread extends Thread {
 				log.info("fetch:" + stamp_sec);
 				
 				HashMap<String, Ticker> ticker_map = this.btc_update_sys.btc_api.ApiTicker();
-				if (ticker_map == null) {
+				if (ticker_map == null ||
+						(last_ticker_map != null && CheckDataUpdate(last_ticker_map, ticker_map) == false)) {
 					log.info("sleep 30 sec");
 					try {
 						Thread.sleep(30000);
@@ -68,6 +80,7 @@ public class BTCUpdateThread extends Thread {
 				}
 				
 				last_stamp_sec = stamp_sec;
+				last_ticker_map = ticker_map;
 				log.info("last_stamp_sec:" + last_stamp_sec);
 			}
 			else {

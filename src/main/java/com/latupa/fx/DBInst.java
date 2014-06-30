@@ -1,4 +1,4 @@
-package com.latupa.stock;
+package com.latupa.fx;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

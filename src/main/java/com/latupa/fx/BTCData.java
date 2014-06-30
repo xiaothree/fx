@@ -184,12 +184,13 @@ public class BTCData {
 	 * @return
 	 */
 	public BTCTotalRecord BTCRecordOptGetByTime(String time) {
-		if (this.b_record_map.containsKey(time)) {
-			return this.b_record_map.get(time);
-		}
-		else {
-			return null;
-		}
+//		if (this.b_record_map.containsKey(time)) {
+//			return this.b_record_map.get(time);
+//		}
+//		else {
+//			return null;
+//		}
+		return null;
 	}
 	
 	/**
@@ -221,7 +222,7 @@ public class BTCData {
 	 * 清理之前内存中的历史数据
 	 * @param pre_days
 	 */
-	public void BTCDataMemoryClean(int pre_days) {
+	public void BTCDataMemoryClean(int pre_days, String pair) {
 		
 		DateFormat df	= new SimpleDateFormat("yyyyMMddHHmmss"); 
 		
@@ -233,8 +234,8 @@ public class BTCData {
 		Date cur_date = new Date(pre_stamp_sec * 1000);
 		String sDateTime = df.format(cur_date); 
 		
-		for (String time : this.b_record_map.headMap(sDateTime, true).keySet().toArray(new String[0])) {
-			this.b_record_map.remove(time);
+		for (String time : this.b_record_map_map.get(pair).headMap(sDateTime, true).keySet().toArray(new String[0])) {
+			this.b_record_map_map.get(pair).remove(time);
 		}
 	}
 	
@@ -244,59 +245,65 @@ public class BTCData {
 	 * @param time_s 起始时间，如果为null，则表示从当前时间往前加载
 	 */
 	public void BTCDataLoadFromDB(int last_days, String time_s) {
-		log.info("load history data from db(" + this.data_cycle + ") for " + last_days + " days");
 		
-		this.b_record_map.clear();
-		
-		String sql = "select floor(time + 0) as time, open, close, high, low, ma5, ma10, ma20, ma30, ma60, ma120, upper, mid, lower, bbi, ema13, ema26, diff, dea, macd from  " + BTC_PRICE_TABLE + "__" + this.data_cycle + " where data_complete = 1";
-//		String sql = "select floor(time + 0) as time, round(open, 2) as open, round(close, 2) as close, round(high, 2) as high, round(low, 2) as low, round(ma5, 2) as ma5, round(ma10, 2) as ma10, round(ma20, 2) as ma20, round(ma30, 2) as ma30, round(ma60, 2) as ma60, round(ma120, 2) as ma120, round(upper, 2) as upper, round(mid, 2) as mid, round(lower, 2) as lower, round(bbi, 2) as bbi, round(ema13, 2) as ema13, round(ema26, 2) as ema26, round(diff, 2) as diff, round(dea, 2) as dea, round(macd, 2) as macd from  " + BTC_PRICE_TABLE + "__" + this.data_cycle + " where data_complete = 1";
-		if (time_s != null) {
-			sql += " where time < '" + time_s + "'";
-		}
-		
-		if (last_days != 0) {
-			sql += " order by time desc limit " + last_days;
-		}
-		
-		ResultSet rs = null;
-		rs = dbInst.selectSQL(sql);
-		try {
-			while (rs.next()) {
-				
-				String time	= rs.getString("time");
-				
-				BTCTotalRecord record = new BTCTotalRecord();
-				
-				record.open		= rs.getDouble("open");
-				record.close	= rs.getDouble("close");
-				record.high		= rs.getDouble("high");
-				record.low		= rs.getDouble("low");
-				
-				record.ma_record.ma5	= rs.getDouble("ma5");
-				record.ma_record.ma10	= rs.getDouble("ma10");
-				record.ma_record.ma20	= rs.getDouble("ma20");
-				record.ma_record.ma30	= rs.getDouble("ma30");
-				record.ma_record.ma60	= rs.getDouble("ma60");
-				record.ma_record.ma120	= rs.getDouble("ma120");
-				
-				record.boll_record.upper	= rs.getDouble("upper");
-				record.boll_record.mid		= rs.getDouble("mid");
-				record.boll_record.lower	= rs.getDouble("lower");
-				record.boll_record.bbi		= rs.getDouble("bbi");
-
-				record.macd_record.ema13	= rs.getDouble("ema13");
-				record.macd_record.ema26	= rs.getDouble("ema26");
-				record.macd_record.diff		= rs.getDouble("diff");
-				record.macd_record.dea		= rs.getDouble("dea");
-				record.macd_record.macd		= rs.getDouble("macd");
-				
-				this.b_record_map.put(time, record);
+		for (String pair : this.btc_s_record_map.keySet()) {
+			
+			log.info("load history data from db(" + this.data_cycle + ") for " + last_days + " days, for " + pair);
+			
+			TreeMap<String, BTCTotalRecord> btc_record_map = this.b_record_map_map.get(pair);
+			
+			btc_record_map.clear();
+			
+			String sql = "select floor(time + 0) as time, open, close, high, low, ma5, ma10, ma20, ma30, ma60, ma120, upper, mid, lower, bbi, ema13, ema26, diff, dea, macd from  " + BTC_PRICE_TABLE + "_" + pair + "__" + this.data_cycle + " where data_complete = 1";
+//			String sql = "select floor(time + 0) as time, round(open, 2) as open, round(close, 2) as close, round(high, 2) as high, round(low, 2) as low, round(ma5, 2) as ma5, round(ma10, 2) as ma10, round(ma20, 2) as ma20, round(ma30, 2) as ma30, round(ma60, 2) as ma60, round(ma120, 2) as ma120, round(upper, 2) as upper, round(mid, 2) as mid, round(lower, 2) as lower, round(bbi, 2) as bbi, round(ema13, 2) as ema13, round(ema26, 2) as ema26, round(diff, 2) as diff, round(dea, 2) as dea, round(macd, 2) as macd from  " + BTC_PRICE_TABLE + "__" + this.data_cycle + " where data_complete = 1";
+			if (time_s != null) {
+				sql += " where time < '" + time_s + "'";
 			}
 			
-			dbInst.closeSQL(rs);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			if (last_days != 0) {
+				sql += " order by time desc limit " + last_days;
+			}
+			
+			ResultSet rs = null;
+			rs = dbInst.selectSQL(sql);
+			try {
+				while (rs.next()) {
+					
+					String time	= rs.getString("time");
+					
+					BTCTotalRecord record = new BTCTotalRecord();
+					
+					record.open		= rs.getDouble("open");
+					record.close	= rs.getDouble("close");
+					record.high		= rs.getDouble("high");
+					record.low		= rs.getDouble("low");
+					
+					record.ma_record.ma5	= rs.getDouble("ma5");
+					record.ma_record.ma10	= rs.getDouble("ma10");
+					record.ma_record.ma20	= rs.getDouble("ma20");
+					record.ma_record.ma30	= rs.getDouble("ma30");
+					record.ma_record.ma60	= rs.getDouble("ma60");
+					record.ma_record.ma120	= rs.getDouble("ma120");
+					
+					record.boll_record.upper	= rs.getDouble("upper");
+					record.boll_record.mid		= rs.getDouble("mid");
+					record.boll_record.lower	= rs.getDouble("lower");
+					record.boll_record.bbi		= rs.getDouble("bbi");
+
+					record.macd_record.ema13	= rs.getDouble("ema13");
+					record.macd_record.ema26	= rs.getDouble("ema26");
+					record.macd_record.diff		= rs.getDouble("diff");
+					record.macd_record.dea		= rs.getDouble("dea");
+					record.macd_record.macd		= rs.getDouble("macd");
+					
+					btc_record_map.put(time, record);
+				}
+				
+				dbInst.closeSQL(rs);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -309,15 +316,15 @@ public class BTCData {
 		String sql = "insert ignore into " + BTC_PRICE_TABLE + "_" + pair + "__" + this.data_cycle + 
 				"(`time`, `open`, `close`, `high`, `low`) values ('" +
 				time + "', " +
-				this.btc_s_record.open + ", " +
-				this.btc_s_record.close + ", " +
-				this.btc_s_record.high + ", " +
-				this.btc_s_record.low + ")" +
+				this.btc_s_record_map.get(pair).open + ", " +
+				this.btc_s_record_map.get(pair).close + ", " +
+				this.btc_s_record_map.get(pair).high + ", " +
+				this.btc_s_record_map.get(pair).low + ")" +
 				"ON DUPLICATE KEY UPDATE " +
-				"`open` = " + this.btc_s_record.open + ", " +
-				"`close` = " + this.btc_s_record.close + ", " +
-				"`high` = " + this.btc_s_record.high + ", " +
-				"`low` = " + this.btc_s_record.low;
+				"`open` = " + this.btc_s_record_map.get(pair).open + ", " +
+				"`close` = " + this.btc_s_record_map.get(pair).close + ", " +
+				"`high` = " + this.btc_s_record_map.get(pair).high + ", " +
+				"`low` = " + this.btc_s_record_map.get(pair).low;
 
 		dbInst.updateSQL(sql);
 	}
@@ -469,8 +476,8 @@ public class BTCData {
 	 */
 	public void BTCRecordMemInsert(String time, String pair) {
 		
-		if (this.btc_s_record.init_flag == false) {
-			BTCTotalRecord record = new BTCTotalRecord(this.btc_s_record);
+		if (this.btc_s_record_map.get(pair).init_flag == false) {
+			BTCTotalRecord record = new BTCTotalRecord(this.btc_s_record_map.get(pair));
 			
 			TreeMap<String, BTCTotalRecord> btc_s_record_map = this.b_record_map_map.get(pair);
 			btc_s_record_map.put(time, record);
@@ -529,12 +536,12 @@ public class BTCData {
 	}
 	
 	public void BTCRecordMemShow() {
-		for (String time : this.b_record_map.keySet().toArray(new String[0])) {
-			BTCBasicRecord record = this.b_record_map.get(time);
-			log.info("time:" + time);
-			record.Show();
-		}
-		log.info(b_record_map.size() + " records");
+//		for (String time : this.b_record_map.keySet().toArray(new String[0])) {
+//			BTCBasicRecord record = this.b_record_map.get(time);
+//			log.info("time:" + time);
+//			record.Show();
+//		}
+//		log.info(b_record_map.size() + " records");
 	}
 	
 	/**
@@ -601,19 +608,20 @@ public class BTCData {
 	 * @return
 	 */
 	public boolean UpdateMockGet() {
-		if (this.update_mock_it.hasNext()) {
-			int day	= this.update_mock_it.next();
-			double close	= this.update_mock_map.get(day);
-			
-			log.debug("mock from db, day:" + day + ", close:" + close);
-			this.btc_s_record.close	= close;
-			this.btc_s_record.open	= day;
-			this.btc_s_record.init_flag	= false;
-			return true;
-		}
-		else {
-			return false;
-		}
+//		if (this.update_mock_it.hasNext()) {
+//			int day	= this.update_mock_it.next();
+//			double close	= this.update_mock_map.get(day);
+//			
+//			log.debug("mock from db, day:" + day + ", close:" + close);
+//			this.btc_s_record.close	= close;
+//			this.btc_s_record.open	= day;
+//			this.btc_s_record.init_flag	= false;
+//			return true;
+//		}
+//		else {
+//			return false;
+//		}
+		return true;
 	}
 	
 	/**
