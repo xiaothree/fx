@@ -32,20 +32,23 @@ public class BTCDataProcThread extends Thread {
 	 * @param time_s 起始时间
 	 * @param time_s 结束时间
 	 */
-	public void ModifyHistoryData(String time_s, String time_e, String pair) {
+	public void ModifyHistoryData(String time_s, String time_e) {
 		//加载数据库中的历史数据到内存中
 		log.info("load data from db for cycle " + this.data_cycle);
 		this.btc_data.BTCDataLoadFromDB(0, null);
 		log.info("load finish");
 		
-		for (String time : this.btc_data.b_record_map.keySet().toArray(new String[0])) {
-			if (time.compareTo(time_s) >= 0 && time.compareTo(time_e) <= 0) {
-				log.info("proc " + time);
-				CalcFunc(time, pair);
-			}
+		for (String pair : this.btc_data.b_record_map_map.keySet()) {
 			
-			if (time.compareTo(time_e) > 0) {
-				break;
+			for (String time : this.btc_data.b_record_map_map.get(pair).keySet().toArray(new String[0])) {
+				if (time.compareTo(time_s) >= 0 && time.compareTo(time_e) <= 0) {
+					log.info("proc " + time);
+					CalcFunc(time, pair);
+				}
+				
+				if (time.compareTo(time_e) > 0) {
+					break;
+				}
 			}
 		}
 		
@@ -138,7 +141,7 @@ public class BTCDataProcThread extends Thread {
 						log.info("update cycle " + this.data_cycle + ", pair:" + pair);
 						slice_record.Show();
 		
-						int curt_k_num = btc_data.b_record_map.size();
+						int curt_k_num = this.btc_data.b_record_map_map.get(pair).size();
 						
 						log.info("new k(" + this.data_cycle + "):" + curt_k_num);
 						
@@ -188,6 +191,6 @@ public class BTCDataProcThread extends Thread {
 		pairs_list.add("EUR_USD");
 		BTCData btc_data = new BTCData(data_cycle, pairs_list);
 		BTCDataProcThread btc_data_proc = new BTCDataProcThread(btc_data, data_cycle);
-		btc_data_proc.ModifyHistoryData(time_s, time_e, "EUR_USD");
+		btc_data_proc.ModifyHistoryData(time_s, time_e);
 	}
 }

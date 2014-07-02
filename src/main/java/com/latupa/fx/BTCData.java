@@ -171,6 +171,7 @@ public class BTCData {
 				"`diff` double NOT NULL default '0', " +
 				"`dea` double NOT NULL default '0', " +
 				"`macd` double NOT NULL default '0', " +
+				"`data_complete` int(11) NOT NULL DEFAULT '0', " +
 				"PRIMARY KEY (`time`)" +
 				") ENGINE=InnoDB DEFAULT CHARSET=utf8";	
 		
