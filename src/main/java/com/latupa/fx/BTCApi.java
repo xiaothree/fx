@@ -473,8 +473,8 @@ public class BTCApi {
 				for (int i = 0; i < jsonarray.size(); i++) {
 				    JSONObject jsonObj1 = (JSONObject) jsonarray.get(i);
 				    
-				    String str_tmp = jsonObj1.toString();
-				    log.info(str_tmp);
+//				    String str_tmp = jsonObj1.toString();
+				    //log.info(str_tmp);
 				    
 				    Ticker ticker	= new Ticker();
 					ticker.instrument	= jsonObj1.getString("instrument");

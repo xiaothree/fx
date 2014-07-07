@@ -1,4 +1,4 @@
-package com.latupa.stock;
+package com.latupa.fx;
 
 import java.util.ArrayList;
 
@@ -17,10 +17,9 @@ public class BTCTradeAction {
 	
 	public static final Log log = LogFactory.getLog(BTCTradeAction.class);
 	
-	BTCApi btc_api;
+	public BTCApi btc_api = new BTCApi();
 	
 	public BTCTradeAction() {
-		this.btc_api	= new BTCApi();
 	}
 	
 	/**

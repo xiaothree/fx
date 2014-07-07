@@ -1,4 +1,4 @@
-package com.latupa.stock;
+package com.latupa.fx;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,7 +11,7 @@ import java.util.Date;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.latupa.stock.BTCTransStrategy4.STATUS;
+import com.latupa.fx.BTCTransStrategy4.STATUS;
 
 /**
  * BTC交易系统

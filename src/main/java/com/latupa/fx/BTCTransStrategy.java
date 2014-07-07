@@ -1,4 +1,4 @@
-package com.latupa.stock;
+package com.latupa.fx;
 
 public interface BTCTransStrategy {
 	

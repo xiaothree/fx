@@ -1,4 +1,4 @@
-package com.latupa.stock;
+package com.latupa.fx;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
