@@ -150,8 +150,8 @@ public class BTCApi {
             
             log.info("Executing request: " + httpGet.getRequestLine());
 
-            httpClient.getParams().setParameter("http.socket.timeout",1000);
-            httpClient.getParams().setParameter("http.connection.timeout",1000);
+            httpClient.getParams().setParameter("http.socket.timeout",10000);
+            httpClient.getParams().setParameter("http.connection.timeout",10000);
             httpClient.getParams().setParameter("http.connection-manager.timeout",100000000L);
             
             HttpResponse resp = httpClient.execute(httpGet);
