@@ -23,13 +23,14 @@ public class BTCUpdateThread extends Thread {
 	
 	private boolean CheckDataUpdate(HashMap<String, Ticker> last_ticker_map, HashMap<String, Ticker> ticker_map) {
 		for (String pair : last_ticker_map.keySet()) {
-			if (last_ticker_map.get(pair).time.equals(ticker_map.get(pair).time)) {
-				log.info("time is same. " + last_ticker_map.get(pair).toString() + ". " + ticker_map.get(pair).toString());
-				return false;
+			if (!last_ticker_map.get(pair).time.equals(ticker_map.get(pair).time)) {
+				return true;
 			}
 		}
 		
-		return true;
+		log.info("time is same.");
+		
+		return false;
 	}
 
 	public void run() {
