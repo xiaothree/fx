@@ -39,7 +39,7 @@ class BTCBasicRecord {
 	}
 	
 	public void Show() {
-		DecimalFormat df = new DecimalFormat("#0.00");
+		DecimalFormat df = new DecimalFormat("#0.0000");
 		log.info("open:" + this.open + ", " +
 				"close:" + this.close +", " +
 				"high:" + this.high + ", " +

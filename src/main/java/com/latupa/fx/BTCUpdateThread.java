@@ -75,6 +75,7 @@ public class BTCUpdateThread extends Thread {
 					}
 				}
 				else {
+					log.info("update prices");
 					for (int data_cycle : this.btc_update_sys.data_map.keySet()) {
 						BTCData btc_data = this.btc_update_sys.data_map.get(data_cycle);
 						btc_data.BTCSliceRecordUpdate(ticker_map);
