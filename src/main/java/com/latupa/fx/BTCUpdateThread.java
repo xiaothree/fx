@@ -74,6 +74,9 @@ public class BTCUpdateThread extends Thread {
 						log.error("sleep exception", e);
 					}
 				}
+				else if (last_ticker_map == null) {
+					log.info("skip the first");
+				}
 				else {
 					log.info("update prices");
 					for (int data_cycle : this.btc_update_sys.data_map.keySet()) {
