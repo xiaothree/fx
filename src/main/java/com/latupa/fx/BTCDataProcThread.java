@@ -1,10 +1,13 @@
 package com.latupa.fx;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,28 +34,66 @@ public class BTCDataProcThread extends Thread {
 	 * 补历史数据用
 	 * @param time_s 起始时间
 	 * @param time_s 结束时间
+	 * @throws ParseException 
+	 * @throws UnsupportedEncodingException 
+	 * @throws InterruptedException 
 	 */
-	public void ModifyHistoryData(String time_s, String time_e) {
+	public void HistoryData(String time_s, String time_e, String cycle) throws ParseException, UnsupportedEncodingException, InterruptedException {
+		
+		log.info("start:" + time_s + ", end:" + time_e + ", cycle:" + cycle);
+		
+		SimpleDateFormat sdf_1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		sdf_1.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+		
+		SimpleDateFormat sdf_2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+		sdf_2.setTimeZone(TimeZone.getTimeZone("GMT+0"));
+		
+		Date date_s = new Date();
+		date_s = sdf_1.parse(time_s);
+		
+		Date date_e = new Date();
+		date_e = sdf_1.parse(time_e);
+		
+		long stamp = date_s.getTime() / 1000 + 7 * 24 * 60 * 60;
+        Date date_tmp = new Date(stamp * 1000);  //原始时间
+        
+        Date date_last = date_s;
+        while (date_tmp.before(date_e)) {
+        	
+        	log.info("start:" + sdf_1.format(date_last) + ", end:" + sdf_1.format(date_tmp));
+        	
+        	//call URLEncoder.encode(sdf_2.format(date_last) URLEncoder.encode(sdf_2.format(date_tmp), "utf-8")
+        	date_last = date_tmp;
+        	
+        	stamp = date_tmp.getTime() / 1000 + 7 * 24 * 60 * 60;
+        	date_tmp = new Date(stamp * 1000);
+        	
+        	Thread.sleep(3000);
+        }
+        
+        log.info("start:" + sdf_1.format(date_last) + ", end:" + sdf_1.format(date_e));
+        //call URLEncoder.encode(sdf_2.format(date_last) URLEncoder.encode(sdf_2.format(date_e), "utf-8")
+        
 		//加载数据库中的历史数据到内存中
-		log.info("load data from db for cycle " + this.data_cycle);
-		this.btc_data.BTCDataLoadFromDB(0, null);
-		log.info("load finish");
-		
-		for (String pair : this.btc_data.b_record_map_map.keySet()) {
-			
-			for (String time : this.btc_data.b_record_map_map.get(pair).keySet().toArray(new String[0])) {
-				if (time.compareTo(time_s) >= 0 && time.compareTo(time_e) <= 0) {
-					log.info("proc " + time);
-					CalcFunc(time, pair);
-				}
-				
-				if (time.compareTo(time_e) > 0) {
-					break;
-				}
-			}
-		}
-		
-		log.info("modify finish");
+//		log.info("load data from db for cycle " + this.data_cycle);
+//		this.btc_data.BTCDataLoadFromDB(0, null);
+//		log.info("load finish");
+//		
+//		for (String pair : this.btc_data.b_record_map_map.keySet()) {
+//			
+//			for (String time : this.btc_data.b_record_map_map.get(pair).keySet().toArray(new String[0])) {
+//				if (time.compareTo(time_s) >= 0 && time.compareTo(time_e) <= 0) {
+//					log.info("proc " + time);
+//					CalcFunc(time, pair);
+//				}
+//				
+//				if (time.compareTo(time_e) > 0) {
+//					break;
+//				}
+//			}
+//		}
+//		
+//		log.info("modify finish");
 	}
 	
 	/**
@@ -178,19 +219,30 @@ public class BTCDataProcThread extends Thread {
 		
 		//处理更新历史数据
 		if (args.length != 3) {
-			System.out.println("usage: time_s(yyyymmddHHMMSS) time_e(yyyymmddHHMMSS) data_cycle");
+			System.out.println("usage: time_s(2014-07-01 10:10:00) time_e(2014-07-19 10:50:00) M5");
 			System.exit(0);
 		}
 		
 		String time_s = args[0];
 		String time_e = args[1];
-		int data_cycle = Integer.parseInt(args[2]);
+		String cycle = args[2];
 		
-		System.out.println("time_s:" + time_s + ", time_e:" + time_e + ", data_cycle:" + data_cycle);
+		System.out.println("time_s:" + time_s + ", time_e:" + time_e + ", data_cycle:" + cycle);
 		ArrayList<String> pairs_list = new ArrayList<String>();
 		pairs_list.add("EUR_USD");
-		BTCData btc_data = new BTCData(data_cycle, pairs_list);
-		BTCDataProcThread btc_data_proc = new BTCDataProcThread(btc_data, data_cycle);
-		btc_data_proc.ModifyHistoryData(time_s, time_e);
+		BTCData btc_data = new BTCData(300, pairs_list);
+		BTCDataProcThread btc_data_proc = new BTCDataProcThread(btc_data, 300);
+		try {
+			btc_data_proc.HistoryData(time_s, time_e, cycle);
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

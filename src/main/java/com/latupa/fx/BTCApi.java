@@ -5,11 +5,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -519,6 +522,99 @@ public class BTCApi {
 	}
 	
 	/**
+	 * 获取历史行情接口
+	 * @return
+	 * @throws ParseException 
+	 * @throws UnsupportedEncodingException 
+	 */
+	public ArrayList<Ticker> ApiHistoryTicker(String pair, String time_s, String time_e, String cycle) throws ParseException, UnsupportedEncodingException {
+		
+		SimpleDateFormat sdf_1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		sdf_1.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+		
+		SimpleDateFormat sdf_2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+		sdf_2.setTimeZone(TimeZone.getTimeZone("GMT+0"));
+		
+		Date date_s = new Date();
+		date_s = sdf_1.parse(time_s);
+        String new_time_s = URLEncoder.encode(sdf_2.format(date_s), "utf-8");
+        
+        Date date_e = new Date();
+		date_e = sdf_1.parse(time_e);
+        String new_time_e = URLEncoder.encode(sdf_2.format(date_e), "utf-8");
+		
+		String str = "instrument=" + pair + "&start=" + new_time_s + "&end=" + new_time_e + "&granularity=" + cycle;
+		log.info(str);
+		
+		String ret = "";
+		try {
+			ret = sendGet(URL_PRACTICE + "/v1/candles", str);
+		} catch (ClientProtocolException e1) {
+			// TODO Auto-generated catch block
+			log.error(e1);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			log.error(e1);
+		}
+		
+		if (ret == "") {
+			log.error("call failed! " + URL_PRACTICE);
+			return null;
+		}
+		
+		ArrayList<Ticker> tick_list = new ArrayList<Ticker>();
+		
+		try {
+			JSONObject jsonObj = JSONObject.fromObject(ret);
+			if (jsonObj.has("candles")) {
+				
+				JSONArray jsonarray	= jsonObj.getJSONArray("candles");
+				
+				for (int i = 0; i < jsonarray.size(); i++) {
+				    JSONObject jsonObj1 = (JSONObject) jsonarray.get(i);
+				    
+//				    String str_tmp = jsonObj1.toString();
+				    //log.info(str_tmp);
+				    
+				    Ticker ticker	= new Ticker();
+					ticker.instrument	= jsonObj.getString("instrument");
+					ticker.bid	= jsonObj1.getDouble("closeBid");
+					ticker.ask	= jsonObj1.getDouble("closeAsk");
+					
+					String str_time	= jsonObj1.getString("time").split("\\.")[0];
+					
+					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+					sdf.setTimeZone(TimeZone.getTimeZone("GMT+0"));
+					
+			        Date date = new Date();
+			        date = sdf.parse(str_time);
+			        
+//			        log.info(date.getTime()/1000);
+			        
+			        SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			        ticker.time = sdf1.format(date);
+			        
+			        log.info(ticker.toString());
+			        
+			        tick_list.add(ticker);
+				}
+				
+				return tick_list;
+			}
+			else if (jsonObj.has("code")){
+				int error_code = jsonObj.getInt("code");
+				String error_info = jsonObj.getString("message");
+				log.error("parse json failed! error_code:" + error_code + ", error_info:" + error_info);
+			}
+		}
+		catch (Exception e) {
+			log.error("parse json failed! json:" + ret, e);
+		}
+		
+		return null;
+	}
+	
+	/**
 	 * 获取订单状态
 	 * @param order_id
 	 */
@@ -776,7 +872,17 @@ public class BTCApi {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		BTCApi btc_api = new BTCApi();
-		btc_api.ApiTicker();
+//		btc_api.ApiTicker();
+		try {
+			btc_api.ApiHistoryTicker("EUR_USD", "2014-07-17 10:00:00", "2014-07-18 22:20:00", "M5");
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (ParseException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 //		String order_id = btc_api.ApiTrade("buy", 4955, 1);
 		try {
 			Thread.sleep(5000);

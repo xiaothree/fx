@@ -11,8 +11,6 @@ import java.util.Date;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.latupa.fx.BTCTransStrategy4.STATUS;
-
 /**
  * BTC交易系统
  * @author latupa
@@ -32,6 +30,7 @@ public class BTCTransSystem {
 		REVIEW,	//复盘
 		ACTUAL;	//实盘
 	};
+	public String fx_pair;
 	public MODE mode;
 	public String review_time_s; //复盘的起始时间
 	public String review_time_e; //复盘的结束时间
@@ -109,7 +108,7 @@ public class BTCTransSystem {
 	public BTCFunc btc_func = new BTCFunc();
 	
 	//交易策略
-	public BTCTransStrategy4 btc_trans_stra = new BTCTransStrategy4();
+	public BTCTransStrategy3 btc_trans_stra = new BTCTransStrategy3();
 	
 	//交易接口
 	public BTCTradeAction btc_trade_action = new BTCTradeAction();
@@ -119,12 +118,17 @@ public class BTCTransSystem {
 	
 	public String btc_trans_postfix;
 	
-	public BTCTransSystem(int data_cycle, MODE mode, String context, String time_s, String time_e) {
+	public BTCTransSystem(int data_cycle, String fx_pair, MODE mode, String context, String time_s, String time_e) {
 		this.data_cycle	= data_cycle;
+		this.fx_pair	= fx_pair;
 		this.mode		= mode;
 		this.review_time_s	= time_s;
 		this.review_time_e	= time_e;
-		this.btc_data	= new BTCData(this.data_cycle);
+		
+		ArrayList<String> pairs_list = new ArrayList<String>();
+		pairs_list.add(this.fx_pair);
+		this.btc_data	= new BTCData(this.data_cycle, pairs_list);
+		
 		this.btc_trans_rec	= new BTCTransRecord(this.btc_data.dbInst);
 		
 		this.trade_mode	= false;
@@ -137,7 +141,7 @@ public class BTCTransSystem {
 		else {
 			this.btc_trans_postfix = "virtual";
 		}
-		this.btc_trans_rec.InitTable(this.btc_trans_postfix);
+		this.btc_trans_rec.InitTable(this.fx_pair + "_" + this.btc_trans_postfix);
 		
 		ContextInit();
 		InitTransMode();
@@ -278,28 +282,23 @@ public class BTCTransSystem {
 			sell_quantity = this.btc_curt_quantity * (double)sell_position / 10;
 			
 			this.btc_curt_quantity		-= sell_quantity;
-			this.btc_sell_price			= price;
+			this.btc_sell_price			= price - 0.0003;  //卖出的时候计算点差
 			sell_volumn					= (sell_quantity * this.btc_sell_price);
 			this.btc_accumulate_volumn	+= sell_volumn;
 			
-//			sell_volumn = sell_volumn * (1 - 0.0003);//计算点差，用于外汇交易
-			
-			
-//			this.btc_profit				+= ((this.btc_sell_price - this.btc_buy_price) * sell_quantity); 
 			this.btc_profit				+= (sell_volumn - this.btc_buy_price * sell_quantity); 
 			
 			this.btc_curt_amount		+= sell_volumn;
 		}
 		
-		this.btc_trans_rec.InsertTransDetail(this.btc_trans_postfix,
+		this.btc_trans_rec.InsertTransDetail(this.fx_pair + "_" + this.btc_trans_postfix,
 				sDateTime, 
 				BTCTransRecord.OPT.OPT_SELL, 
 				sell_quantity, 
 				this.btc_sell_price);
 		
-		DecimalFormat df1 = new DecimalFormat("#0.00");
-		DecimalFormat df2 = new DecimalFormat("#0.0000");
-		log.info("TransProcess[SELL]: quantity:" + df2.format(sell_quantity) +
+		DecimalFormat df1 = new DecimalFormat("#0.00000");
+		log.info("TransProcess[SELL]: quantity:" + df1.format(sell_quantity) +
 				", price:" + df1.format(this.btc_sell_price) +
 				", volumn:" + df1.format(sell_volumn) +
 				", curt position:" + this.btc_curt_position);
@@ -315,7 +314,7 @@ public class BTCTransSystem {
 			//更新总金额
 			this.btc_accumulate_profit	+= this.btc_profit;
 			
-			this.btc_trans_rec.InsertTrans(this.btc_trans_postfix,
+			this.btc_trans_rec.InsertTrans(this.fx_pair + "_" + this.btc_trans_postfix,
 					sDateTime, 
 					this.btc_buy_volumn, 
 					this.btc_buy_volumn + this.btc_profit, 
@@ -396,15 +395,14 @@ public class BTCTransSystem {
 		this.btc_time_buyin	= sDateTime;
 		this.btc_buy_reason	= reason;
 		
-		this.btc_trans_rec.InsertTransDetail(this.btc_trans_postfix,
+		this.btc_trans_rec.InsertTransDetail(this.fx_pair + "_" + this.btc_trans_postfix,
 				sDateTime, 
 				BTCTransRecord.OPT.OPT_BUY, 
 				this.btc_curt_quantity, 
 				this.btc_buy_price);
 		
-		DecimalFormat df1 = new DecimalFormat("#0.00");
-		DecimalFormat df2 = new DecimalFormat("#0.0000");
-		log.info("TransProcess[BUY]: quantity:" + df2.format(this.btc_curt_quantity) +
+		DecimalFormat df1 = new DecimalFormat("#0.00000");
+		log.info("TransProcess[BUY]: quantity:" + df1.format(this.btc_curt_quantity) +
 				", price:" + df1.format(this.btc_buy_price) +
 				", volumn:" + df1.format(this.btc_buy_volumn) +
 				", position:" + this.btc_curt_position);
@@ -434,7 +432,7 @@ public class BTCTransSystem {
 					log.info("start change to real trade mode ...");
 					
 					this.btc_trans_postfix = "actual";
-					this.btc_trans_rec.InitTable(this.btc_trans_postfix);
+					this.btc_trans_rec.InitTable(this.fx_pair + "_" + this.btc_trans_postfix);
 					
 					//获取当前资金
 					UserInfo user_info	= this.btc_trade_action.DoUserInfo();
@@ -467,7 +465,7 @@ public class BTCTransSystem {
 					
 					//卖出当前所有仓位
 					ArrayList<TradeRet> tr_list = this.btc_trade_action.DoSell(10);
-					this.btc_trans_stra.curt_status = BTCTransStrategy4.STATUS.READY;
+					this.btc_trans_stra.curt_status = BTCTransStrategy3.STATUS.READY;
 					if (tr_list != null) {
 						//获取当前资金
 						UserInfo user_info	= this.btc_trade_action.DoUserInfo();
@@ -547,14 +545,14 @@ public class BTCTransSystem {
 	private void ProcTrans(String sDateTime) {
 		
 		this.btc_trans_stra.InitPoint();
-		this.btc_trans_stra.CheckPoint(this.btc_buy_price, this.btc_data, sDateTime);
+		this.btc_trans_stra.CheckPoint(this.btc_buy_price, this.btc_data, sDateTime, this.fx_pair);
 		
-		BTCTotalRecord record	= this.btc_data.BTCRecordOptGetByCycle(0, null);
+		BTCTotalRecord record	= this.btc_data.BTCRecordOptGetByCycle(0, null, this.fx_pair);
 		
 		RecordForCycle(sDateTime, record);
 		
-		//如果还未满仓，则判断是否要入场
-		if (this.btc_trans_stra.curt_status != BTCTransStrategy4.STATUS.BUYIN) {
+		//如果还未入场，则判断是否要入场
+		if (this.btc_trans_stra.curt_status == BTCTransStrategy3.STATUS.READY) {
 			
 			int ret = this.btc_trans_stra.IsBuy(sDateTime);
 			if (ret != 0) {
@@ -579,7 +577,7 @@ public class BTCTransSystem {
 		}
 		
 		//如果已入场，则判断是否要出场
-		if (this.btc_trans_stra.curt_status != BTCTransStrategy4.STATUS.READY) {
+		else if (this.btc_trans_stra.curt_status != BTCTransStrategy3.STATUS.READY) {
 			
 			//判断是否要出场
 			int sell_position = this.btc_trans_stra.IsSell(sDateTime);
@@ -611,7 +609,7 @@ public class BTCTransSystem {
 	 */
 	public void RecordForDay(String sDateTime, BTCTotalRecord record, UserInfo user_info) {
 		
-		DecimalFormat df1 = new DecimalFormat("#0.00");
+		DecimalFormat df1 = new DecimalFormat("#0.00000");
 		
 		String curt_day = sDateTime.substring(0, 8);
 		
@@ -646,7 +644,7 @@ public class BTCTransSystem {
 	 */
 	public void RecordForMonth(String sDateTime, BTCTotalRecord record, UserInfo user_info) {
 		
-		DecimalFormat df1 = new DecimalFormat("#0.00");
+		DecimalFormat df1 = new DecimalFormat("#0.00000");
 		
 		String curt_month = sDateTime.substring(0, 6);
 		
@@ -681,7 +679,7 @@ public class BTCTransSystem {
 	 */
 	public void RecordForYear(String sDateTime, BTCTotalRecord record, UserInfo user_info) {
 		
-		DecimalFormat df1 = new DecimalFormat("#0.00");
+		DecimalFormat df1 = new DecimalFormat("#0.00000");
 		
 		String curt_year = sDateTime.substring(0, 4);
 		
@@ -715,13 +713,13 @@ public class BTCTransSystem {
 			log.info("start by mock src");
 			
 			//从数据库mock数值的初始化
-			this.btc_data.BTCMockInit(this.review_time_s, this.review_time_e);
+			this.btc_data.BTCMockInit(this.fx_pair, this.review_time_s, this.review_time_e);
 			
 			//每次mock一条
 			while (this.btc_data.btc_mock_it.hasNext()) {
 				String sDateTime		= this.btc_data.btc_mock_it.next();
 				BTCTotalRecord record	= this.btc_data.btc_mock_map.get(sDateTime);
-				this.btc_data.b_record_map.put(sDateTime, record);
+				this.btc_data.b_record_map_map.get(this.fx_pair).put(sDateTime, record);
 				
 				log.info("proc " + sDateTime);
 				ProcTrans(sDateTime);
@@ -767,7 +765,7 @@ public class BTCTransSystem {
 					
 					while (true) {
 						this.btc_data.BTCDataLoadFromDB(20, null);
-						if (!this.btc_data.b_record_map.containsKey(sDateTime)) {
+						if (!this.btc_data.b_record_map_map.get(this.fx_pair).containsKey(sDateTime)) {
 							log.info("just wait k of " + sDateTime);
 							try {
 								Thread.sleep(1000);
@@ -784,7 +782,7 @@ public class BTCTransSystem {
 					log.info("proc " + sDateTime);
 					ProcTrans(sDateTime);
 					
-					this.btc_data.b_record_map.clear();
+					this.btc_data.b_record_map_map.get(this.fx_pair).clear();
 				}
 				
 				last_stamp_sec = stamp_sec;
@@ -805,24 +803,25 @@ public class BTCTransSystem {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		
-		//K线周期，运行模式， 标识（只有复盘有用），[复盘起始时间]， [复盘结束时间]
+		//K线周期，运行模式， 外汇对，标识（只有复盘有用），[复盘起始时间]， [复盘结束时间]
 		int data_cycle = Integer.parseInt(args[0]);
-		MODE mode = MODE.values()[Integer.parseInt(args[1])];//0-REVIEW;1-ACTUAL
-		String context = args[2];
+		String fx_pair = args[1];
+		MODE mode = MODE.values()[Integer.parseInt(args[2])];//0-REVIEW;1-ACTUAL
+		String context = args[3];
 		
 		String time_s = null;
 		String time_e = null;
 		if (args.length >= 4) {
-			time_s = args[3];
+			time_s = args[4];
 		}
 		
 		if (args.length >= 5) {
-			time_e = args[4];
+			time_e = args[5];
 		}
 		
-		System.out.println("para:" + data_cycle + "," + mode + "," + context + "," + time_s + "," + time_e);
+		System.out.println("para:" + data_cycle + "," + fx_pair + ", " + mode + "," + context + "," + time_s + "," + time_e);
 		
-		BTCTransSystem btc_ts = new BTCTransSystem(data_cycle, mode, context, time_s, time_e);
+		BTCTransSystem btc_ts = new BTCTransSystem(data_cycle, fx_pair, mode, context, time_s, time_e);
 		btc_ts.Route();
 	}
 }

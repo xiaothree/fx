@@ -20,7 +20,7 @@ public interface BTCTransStrategy {
 	 * check状态是否变化
 	 * @param btc_data
 	 */
-	public void CheckPoint(double buy_price, BTCData btc_data, String sDateTime);
+	public void CheckPoint(double buy_price, BTCData btc_data, String sDateTime, String pair);
 	
 	/**
 	 * 初始化相关值

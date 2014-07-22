@@ -141,11 +141,11 @@ public class BTCTransStrategy3 implements BTCTransStrategy {
 			return str;
 		}
 		
-		public boolean IsMultiBottom(BTCData btc_data) {
+		public boolean IsMultiBottom(BTCData btc_data, String pair) {
 				
-			BTCTotalRecord record	= btc_data.BTCRecordOptGetByCycle(0, null);
-			BTCTotalRecord record_1cycle_before	= btc_data.BTCRecordOptGetByCycle(1, null);
-			BTCTotalRecord record_2cycle_before	= btc_data.BTCRecordOptGetByCycle(2, null);
+			BTCTotalRecord record	= btc_data.BTCRecordOptGetByCycle(0, null, pair);
+			BTCTotalRecord record_1cycle_before	= btc_data.BTCRecordOptGetByCycle(1, null, pair);
+			BTCTotalRecord record_2cycle_before	= btc_data.BTCRecordOptGetByCycle(2, null, pair);
 			
 			if (record.macd_record.macd < 0) {
 				
@@ -262,11 +262,11 @@ public class BTCTransStrategy3 implements BTCTransStrategy {
 		return str;
 	}
 	
-	public void CheckPoint(double buy_price, BTCData btc_data, String sDateTime) {
+	public void CheckPoint(double buy_price, BTCData btc_data, String sDateTime, String pair) {
 		
-		BTCTotalRecord record	= btc_data.BTCRecordOptGetByCycle(0, null);
-		BTCTotalRecord record_1cycle_before	= btc_data.BTCRecordOptGetByCycle(1, null);
-		BTCTotalRecord record_2cycle_before	= btc_data.BTCRecordOptGetByCycle(2, null);
+		BTCTotalRecord record	= btc_data.BTCRecordOptGetByCycle(0, null, pair);
+		BTCTotalRecord record_1cycle_before	= btc_data.BTCRecordOptGetByCycle(1, null, pair);
+		BTCTotalRecord record_2cycle_before	= btc_data.BTCRecordOptGetByCycle(2, null, pair);
 		
 		this.curt_price	= record.close;
 		
@@ -367,7 +367,7 @@ public class BTCTransStrategy3 implements BTCTransStrategy {
 		}
 		
 		//macd多重底
-		if (true == this.status_multi_bottom.IsMultiBottom(btc_data)) {
+		if (true == this.status_multi_bottom.IsMultiBottom(btc_data, pair)) {
 			this.is_multi_macd_bottom = true;
 		}
 		

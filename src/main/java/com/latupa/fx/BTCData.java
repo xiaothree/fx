@@ -628,7 +628,7 @@ public class BTCData {
 	/**
 	 * 从数据库获取BTC的Mock数据
 	 */
-	public void BTCMockInit(String time_s, String time_e) {
+	public void BTCMockInit(String pair, String time_s, String time_e) {
 		
 //		String sql = "select floor(time + 0) as time, " +
 //				"round(open, 2) as open, " +
@@ -652,7 +652,7 @@ public class BTCData {
 //				"round(macd, 2) as macd " +
 //				"from  " + BTC_PRICE_TABLE + "__" + this.data_cycle + 
 //				" where data_complete = 1";
-		String sql = "select floor(time + 0) as time, open, close, high, low, ma5, ma10, ma20, ma30, ma60, ma120, upper, mid, lower, bbi, ema13, ema26, diff, dea, macd from  " + BTC_PRICE_TABLE + "__" + this.data_cycle + " where data_complete = 1";
+		String sql = "select floor(time + 0) as time, open, close, high, low, ma5, ma10, ma20, ma30, ma60, ma120, upper, mid, lower, bbi, ema13, ema26, diff, dea, macd from  " + BTC_PRICE_TABLE + "_" + pair + "__" + this.data_cycle + " where data_complete = 1";
 		if (time_s != null) {
 			sql += " and time >= '" + time_s + "'";
 		}
