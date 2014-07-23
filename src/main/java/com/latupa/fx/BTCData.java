@@ -240,6 +240,14 @@ public class BTCData {
 		}
 	}
 	
+	
+	public void BTCDataCleanDB(String pair) {
+		log.info("clean data from db");
+		String sql = "truncate table " + BTC_PRICE_TABLE + "_" + pair + "__" + this.data_cycle;
+		dbInst.updateSQL(sql);
+		return;
+	}
+	
 	/**
 	 * 从数据库加载历史数据
 	 * @param last_days 最近天数的数据，如果为0，则表示加载所有
@@ -477,12 +485,10 @@ public class BTCData {
 	 */
 	public void BTCRecordMemInsert(String time, String pair) {
 		
-		if (this.btc_s_record_map.get(pair).init_flag == false) {
-			BTCTotalRecord record = new BTCTotalRecord(this.btc_s_record_map.get(pair));
-			
-			TreeMap<String, BTCTotalRecord> btc_s_record_map = this.b_record_map_map.get(pair);
-			btc_s_record_map.put(time, record);
-		}
+		BTCTotalRecord record = new BTCTotalRecord(this.btc_s_record_map.get(pair));
+		
+		TreeMap<String, BTCTotalRecord> btc_s_record_map = this.b_record_map_map.get(pair);
+		btc_s_record_map.put(time, record);
 	}
 	
 	/**
