@@ -10,8 +10,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -295,30 +293,30 @@ public class BTCApi {
         return result;
     }    
 	
-	private String md5(String plainText) {
-        try {
-			MessageDigest md = MessageDigest.getInstance("MD5");
-			md.update(plainText.getBytes());
-			byte b[] = md.digest();
-			int i;
-			StringBuffer buf = new StringBuffer("");
-			for (int offset = 0; offset < b.length; offset++) {
-				i = b[offset];
-				if (i < 0)
-				i += 256;
-				if (i < 16)
-				buf.append("0");
-				buf.append(Integer.toHexString(i));
-			}
-			    
-		    return buf.toString();
-		    //System.out.println("result: " + buf.toString());// 32位的加密
-			//System.out.println("result: " + buf.toString().substring(8, 24));// 16位的加密
-        } catch (NoSuchAlgorithmException e) {
-        	log.error("calc md5 failed for str:" + plainText, e);
-        	return null;
-        }
-	}
+//	private String md5(String plainText) {
+//        try {
+//			MessageDigest md = MessageDigest.getInstance("MD5");
+//			md.update(plainText.getBytes());
+//			byte b[] = md.digest();
+//			int i;
+//			StringBuffer buf = new StringBuffer("");
+//			for (int offset = 0; offset < b.length; offset++) {
+//				i = b[offset];
+//				if (i < 0)
+//				i += 256;
+//				if (i < 16)
+//				buf.append("0");
+//				buf.append(Integer.toHexString(i));
+//			}
+//			    
+//		    return buf.toString();
+//		    //System.out.println("result: " + buf.toString());// 32位的加密
+//			//System.out.println("result: " + buf.toString().substring(8, 24));// 16位的加密
+//        } catch (NoSuchAlgorithmException e) {
+//        	log.error("calc md5 failed for str:" + plainText, e);
+//        	return null;
+//        }
+//	}
 	
 	public String HttpPost(String url, TreeMap<String, String> para) {
 		String str_para = "";
