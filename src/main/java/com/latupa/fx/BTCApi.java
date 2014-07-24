@@ -527,21 +527,21 @@ public class BTCApi {
 	 */
 	public ArrayList<Ticker> ApiHistoryTicker(String pair, String time_s, String time_e, String cycle) throws ParseException, UnsupportedEncodingException {
 		
-		SimpleDateFormat sdf_1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		sdf_1.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+//		SimpleDateFormat sdf_1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//		sdf_1.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+//		
+//		SimpleDateFormat sdf_2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+//		sdf_2.setTimeZone(TimeZone.getTimeZone("GMT+0"));
+//		
+//		Date date_s = new Date();
+//		date_s = sdf_1.parse(time_s);
+//        String new_time_s = URLEncoder.encode(sdf_2.format(date_s), "utf-8");
+//        
+//        Date date_e = new Date();
+//		date_e = sdf_1.parse(time_e);
+//        String new_time_e = URLEncoder.encode(sdf_2.format(date_e), "utf-8");
 		
-		SimpleDateFormat sdf_2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-		sdf_2.setTimeZone(TimeZone.getTimeZone("GMT+0"));
-		
-		Date date_s = new Date();
-		date_s = sdf_1.parse(time_s);
-        String new_time_s = URLEncoder.encode(sdf_2.format(date_s), "utf-8");
-        
-        Date date_e = new Date();
-		date_e = sdf_1.parse(time_e);
-        String new_time_e = URLEncoder.encode(sdf_2.format(date_e), "utf-8");
-		
-		String str = "instrument=" + pair + "&start=" + new_time_s + "&end=" + new_time_e + "&granularity=" + cycle;
+		String str = "instrument=" + pair + "&start=" + time_s + "&end=" + time_e + "&granularity=" + cycle;
 		log.info(str);
 		
 		String ret = "";
