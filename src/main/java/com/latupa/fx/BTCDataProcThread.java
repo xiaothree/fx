@@ -89,17 +89,17 @@ public class BTCDataProcThread extends Thread {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 		sdf.setTimeZone(TimeZone.getTimeZone("GMT+0"));
 		
-		ArrayList<Ticker> ticker_list = this.btc_api.ApiHistoryTicker(pair, 
+		ArrayList<HistoryTicker> ticker_list = this.btc_api.ApiHistoryTicker(pair, 
 				URLEncoder.encode(sdf.format(date_s), "utf-8"), 
 				URLEncoder.encode(sdf.format(date_e), "utf-8"), 
 				cycle);
 		
 		for (int i = 0; i < ticker_list.size(); i++) {
-			Ticker ticker = ticker_list.get(i);
-			HashMap<String, Ticker> pair_map = new HashMap<String, Ticker>();
+			HistoryTicker ticker = ticker_list.get(i);
+			HashMap<String, HistoryTicker> pair_map = new HashMap<String, HistoryTicker>();
 			pair_map.put(pair, ticker);
 			
-			this.btc_data.BTCSliceRecordUpdate(pair_map);
+			this.btc_data.BTCSliceHistoryRecordUpdate(pair_map);
 			
 			String sDateTime = ticker.time; 
 			

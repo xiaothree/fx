@@ -555,6 +555,25 @@ public class BTCData {
 	 * 更新BTCSliceRecord的值
 	 * @throws IOException 
 	 */
+	public synchronized void BTCSliceHistoryRecordUpdate(HashMap<String, HistoryTicker> ticker_map) {
+		
+		for (String pair : ticker_map.keySet()) {
+			BTCDSliceRecord s_record = this.btc_s_record_map.get(pair);
+			
+				s_record.high	= ticker_map.get(pair).high * 10000;
+				s_record.low	= ticker_map.get(pair).low * 10000;
+				s_record.open	= ticker_map.get(pair).open * 10000;
+				s_record.close	= ticker_map.get(pair).close * 10000;
+				s_record.init_flag	= false;
+		}
+		
+		return;
+	}
+	
+	/**
+	 * 更新BTCSliceRecord的值
+	 * @throws IOException 
+	 */
 	public synchronized void BTCSliceRecordUpdate(HashMap<String, Ticker> ticker_map) {
 		
 //		double last = FetchMock();

@@ -46,6 +46,23 @@ class Ticker {
 	}
 }
 
+class HistoryTicker {
+	public static final Log log = LogFactory.getLog(HistoryTicker.class);
+	
+	double high;
+	double open;
+	double low;
+	double close;
+	
+	String instrument;
+	String time;
+	
+	public String toString() {
+		String str = "time:" + time + ", instrument:" + instrument + ", open:" + open + ", low:" + low + ", high" + high + ", close:" + close;
+		return str;
+	}
+}
+
 class UserInfo {
 	public static final Log log = LogFactory.getLog(UserInfo.class);
 	
@@ -525,21 +542,7 @@ public class BTCApi {
 	 * @throws ParseException 
 	 * @throws UnsupportedEncodingException 
 	 */
-	public ArrayList<Ticker> ApiHistoryTicker(String pair, String time_s, String time_e, String cycle) throws ParseException, UnsupportedEncodingException {
-		
-//		SimpleDateFormat sdf_1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//		sdf_1.setTimeZone(TimeZone.getTimeZone("GMT+8"));
-//		
-//		SimpleDateFormat sdf_2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-//		sdf_2.setTimeZone(TimeZone.getTimeZone("GMT+0"));
-//		
-//		Date date_s = new Date();
-//		date_s = sdf_1.parse(time_s);
-//        String new_time_s = URLEncoder.encode(sdf_2.format(date_s), "utf-8");
-//        
-//        Date date_e = new Date();
-//		date_e = sdf_1.parse(time_e);
-//        String new_time_e = URLEncoder.encode(sdf_2.format(date_e), "utf-8");
+	public ArrayList<HistoryTicker> ApiHistoryTicker(String pair, String time_s, String time_e, String cycle) throws ParseException, UnsupportedEncodingException {
 		
 		String str = "instrument=" + pair + "&start=" + time_s + "&end=" + time_e + "&granularity=" + cycle;
 		log.info(str);
@@ -560,7 +563,7 @@ public class BTCApi {
 			return null;
 		}
 		
-		ArrayList<Ticker> tick_list = new ArrayList<Ticker>();
+		ArrayList<HistoryTicker> tick_list = new ArrayList<HistoryTicker>();
 		
 		try {
 			JSONObject jsonObj = JSONObject.fromObject(ret);
@@ -574,10 +577,12 @@ public class BTCApi {
 //				    String str_tmp = jsonObj1.toString();
 				    //log.info(str_tmp);
 				    
-				    Ticker ticker	= new Ticker();
+				    HistoryTicker ticker	= new HistoryTicker();
 					ticker.instrument	= jsonObj.getString("instrument");
-					ticker.bid	= jsonObj1.getDouble("closeBid");
-					ticker.ask	= jsonObj1.getDouble("closeAsk");
+					ticker.open	= jsonObj1.getDouble("openAsk");
+					ticker.low	= jsonObj1.getDouble("lowAsk");
+					ticker.high	= jsonObj1.getDouble("highAsk");
+					ticker.close= jsonObj1.getDouble("closeAsk");
 					
 					String str_time	= jsonObj1.getString("time").split("\\.")[0];
 					
