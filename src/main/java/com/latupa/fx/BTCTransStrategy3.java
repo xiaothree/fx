@@ -83,7 +83,7 @@ public class BTCTransStrategy3 implements BTCTransStrategy {
 	public final static int CONTIDION_MA_MACD_UP	= 1<<3;  //均线支撑&&macd红线变长
 	public final static int CONTIDION_MA_BOLL_UP	= 1<<4;  //均线支撑&&贴boll上轨
 	public final static int CONTIDION_MID_DOWN_MACD_UP = 1<<5; //低位macd红线变长
-	public final static int CONTIDION_MACD_TO_RED   = 1<<6;  //macd变红
+	public final static int CONTIDION_MACD_TO_RED   = 1<<6;  //macd变红&&突破布林线中轨
 	public final static int CONTIDION_BULL_MACD_UP = 1<<7; //多头macd红线变长
 	
 	//买入原因
