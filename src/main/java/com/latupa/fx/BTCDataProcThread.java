@@ -47,6 +47,9 @@ public class BTCDataProcThread extends Thread {
 		if (is_clean == true) {
 			this.btc_data.BTCDataCleanDB(pair);
 		}
+		else {
+			this.btc_data.BTCDataLoadFromDB(1000, time_s);
+		}
 		
 		SimpleDateFormat sdf_1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		sdf_1.setTimeZone(TimeZone.getTimeZone("GMT+8"));

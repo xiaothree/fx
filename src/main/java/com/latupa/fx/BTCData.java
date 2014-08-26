@@ -266,7 +266,7 @@ public class BTCData {
 			String sql = "select floor(time + 0) as time, open, close, high, low, ma5, ma10, ma20, ma30, ma60, ma120, upper, mid, lower, bbi, ema13, ema26, diff, dea, macd from  " + BTC_PRICE_TABLE + "_" + pair + "__" + this.data_cycle + " where data_complete = 1";
 //			String sql = "select floor(time + 0) as time, round(open, 2) as open, round(close, 2) as close, round(high, 2) as high, round(low, 2) as low, round(ma5, 2) as ma5, round(ma10, 2) as ma10, round(ma20, 2) as ma20, round(ma30, 2) as ma30, round(ma60, 2) as ma60, round(ma120, 2) as ma120, round(upper, 2) as upper, round(mid, 2) as mid, round(lower, 2) as lower, round(bbi, 2) as bbi, round(ema13, 2) as ema13, round(ema26, 2) as ema26, round(diff, 2) as diff, round(dea, 2) as dea, round(macd, 2) as macd from  " + BTC_PRICE_TABLE + "__" + this.data_cycle + " where data_complete = 1";
 			if (time_s != null) {
-				sql += " where time < '" + time_s + "'";
+				sql += " and time < '" + time_s + "'";
 			}
 			
 			if (last_days != 0) {
