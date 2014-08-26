@@ -721,7 +721,7 @@ public class BTCTransSystem {
 				BTCTotalRecord record	= this.btc_data.btc_mock_map.get(sDateTime);
 				this.btc_data.b_record_map_map.get(this.fx_pair).put(sDateTime, record);
 				
-				log.info("proc " + sDateTime);
+//				log.info("proc " + sDateTime);
 				ProcTrans(sDateTime);
 			}
 		}

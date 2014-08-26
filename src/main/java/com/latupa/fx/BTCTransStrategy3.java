@@ -270,10 +270,10 @@ public class BTCTransStrategy3 implements BTCTransStrategy {
 		
 		this.curt_price	= record.close;
 		
-		log.info("record:" + record.toString());
-		log.info("record1:" + record_1cycle_before.toString());
-		log.info("record2:" + record_2cycle_before.toString());
-		log.info("record5:" + record_2cycle_before.toString());
+//		log.info("record:" + record.toString());
+//		log.info("record1:" + record_1cycle_before.toString());
+//		log.info("record2:" + record_2cycle_before.toString());
+//		log.info("record5:" + record_2cycle_before.toString());
 		
 		
 		//高于60日均线
@@ -427,7 +427,7 @@ public class BTCTransStrategy3 implements BTCTransStrategy {
 			this.is_zhisun = true;
 		}
 		
-		log.info("checkpoint:" + this.toString());
+//		log.info("checkpoint:" + this.toString());
 	}
 	
 	public void BuyReset() {
