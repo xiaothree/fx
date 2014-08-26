@@ -457,7 +457,7 @@ public class BTCTransStrategy3 implements BTCTransStrategy {
 		}
 		
 		//均线支撑
-		if (this.is_ma_support) {
+//		if (this.is_ma_support) {
 //		if (this.is_ma_support) {
 //			if (this.is_macd_up) {
 //				ret = CONTIDION_MA_MACD_UP;
@@ -466,24 +466,24 @@ public class BTCTransStrategy3 implements BTCTransStrategy {
 //				log.info("TransProcess: time:" + sDateTime + ", price:" + df1.format(this.curt_price) + ", buy for ma_support && macd_up, status from " + STATUS.READY + " to " + this.curt_status);
 //			}
 			
-			if (this.is_boll_up) {
-				StatusChange(STATUS.BUYIN, "ma_support && boll_up", sDateTime, 0);
-				ret = CONTIDION_MA_BOLL_UP;
-				is_buy	= true;
-			}
-		}
-		
-		if (this.is_macd_up) {
-			if (this.is_last_boll_mid_down) {
-				StatusChange(STATUS.BUYIN, "macd up && mid down", sDateTime, 0);
-				ret = CONTIDION_MID_DOWN_MACD_UP;
-			}
-			else if (this.is_ma_bull_arrange) {
-				StatusChange(STATUS.BUYIN, "macd up && bull", sDateTime, 0);
-				ret = CONTIDION_BULL_MACD_UP;
-			}
-			is_buy	= true;
-		}
+//			if (this.is_boll_up) {
+//				StatusChange(STATUS.BUYIN, "ma_support && boll_up", sDateTime, 0);
+//				ret = CONTIDION_MA_BOLL_UP;
+//				is_buy	= true;
+//			}
+//		}
+//		
+//		if (this.is_macd_up) {
+//			if (this.is_last_boll_mid_down) {
+//				StatusChange(STATUS.BUYIN, "macd up && mid down", sDateTime, 0);
+//				ret = CONTIDION_MID_DOWN_MACD_UP;
+//			}
+//			else if (this.is_ma_bull_arrange) {
+//				StatusChange(STATUS.BUYIN, "macd up && bull", sDateTime, 0);
+//				ret = CONTIDION_BULL_MACD_UP;
+//			}
+//			is_buy	= true;
+//		}
 		
 		//多重底
 //hold		if (this.is_multi_macd_bottom) {
