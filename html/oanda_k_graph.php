@@ -13,7 +13,7 @@
 		require_once("oanda_query.php");
 
 		function usage() {
-			echo "oanda_graph.php?pair=EUR_USD&data_cycle=[60|120|300|600]&start=yyyymmddhhmmss&end=[yyyymmddhhmmss]\n";
+			echo "oanda_graph.php?pair=EUR_USD&data_cycle=[60|120|300|600]&start=yyyymmddhhmmss&end=[yyyymmddhhmmss]&range=[ndays]\n";
 		}
 
 		if (!isset($_GET["pair"]) || !isset($_GET["data_cycle"]) || !isset($_GET["start"])) {
@@ -30,8 +30,9 @@
 		$pair  = $_GET["pair"];
 		$start = $_GET["start"];
 		$end   = $_GET["end"] ? $_GET["end"] : "";
+		$range = $_GET["range"] ? $_GET["range"] : "";
 
-		$k_daily = query_summary_daily($pair, $data_cycle, $start, $end);
+		$k_daily = query_summary_daily($pair, $data_cycle, $start, $end, $range);
 		//var_dump($k_daily);
 		//echo "count:".count($k_daily)."\n";
 		$json_k_daily=json_encode($k_daily);
