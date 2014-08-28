@@ -6,7 +6,7 @@
 	define ("MYSQL_DB", "oanda");
 	define ("TABLE_PRE", "oanda_price_");
 
-	function query_summary_daily($pair, $table_postfix, $start, $end) {
+	function query_summary_daily($pair, $table_postfix, $start, $end, $range) {
 
 		$db = mysql_connect(MYSQL_HOST, MYSQL_NAME, MYSQL_PASSWORD);
 		if (!$db) {
@@ -18,6 +18,11 @@
 
 		mysql_query("use ".MYSQL_DB);
 		mysql_query("set names utf8");
+
+		if ($range != "") {
+			$end_time = strtotime($start) + $range * 24 * 3600;
+			$end = date('YmdHis', $end_time);
+		}
 
 		$sql = "select time, truncate(open, 2) as open, truncate(close, 2) as close, truncate(high, 2) as high, truncate(low, 2) as low, truncate(macd, 2) as macd, truncate(diff, 2) as diff, truncate(dea, 2) as dea, truncate(upper, 2) as upper, truncate(mid, 2) as mid, truncate(lower, 2) as lower, truncate(bbi, 2) as bbi, truncate(ma5, 2) as ma5, truncate(ma10, 2) as ma10, truncate(ma20, 2) as ma20, truncate(ma30, 2) as ma30, truncate(ma60, 2) as ma60, truncate(ma120, 2) as ma120 from ".$table_name." where time >= '".$start."'";
 		if ($end != "") {
