@@ -456,13 +456,21 @@ public class BTCTransStrategy3 implements BTCTransStrategy {
 		boolean is_buy = false;
 		int ret = 0;
 		
+//		if (this.is_macd_changeto_red &&
+//				this.is_up_boll_mid &&
+//				this.is_k_yangxian) {
+//			StatusChange(STATUS.BUYIN, "boll_up && up_ma60 && k_yangxian && macd_red_to_long", sDateTime, 0);
+//			ret = CONTIDION_200;
+//			is_buy = true;
+//		}
+		
 		if (this.is_boll_up &&
 				this.is_up_ma60 &&
-				this.is_k_yangxian &&
-				this.is_macd_red_to_long) {
-			StatusChange(STATUS.BUYIN, "boll_up && up_ma60 && k_yangxian && macd_red_to_long", sDateTime, 0);
-			ret = CONTIDION_200;
-			is_buy = true;
+				this.is_macd_red_to_long &&
+				this.is_k_yangxian) {
+					StatusChange(STATUS.BUYIN, "boll_up && up_ma60 && k_yangxian && macd_red_to_long", sDateTime, 0);
+					ret = CONTIDION_200;
+					is_buy = true;
 		}
 		
 		if (is_buy) {

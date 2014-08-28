@@ -677,7 +677,27 @@ public class BTCData {
 //				"round(macd, 2) as macd " +
 //				"from  " + BTC_PRICE_TABLE + "__" + this.data_cycle + 
 //				" where data_complete = 1";
-		String sql = "select floor(time + 0) as time, open, close, high, low, ma5, ma10, ma20, ma30, ma60, ma120, upper, mid, lower, bbi, ema13, ema26, diff, dea, macd from  " + BTC_PRICE_TABLE + "_" + pair + "__" + this.data_cycle + " where data_complete = 1";
+		String sql = "select floor(time + 0) as time, " +
+				"truncate(open,2) as open, " +
+				"truncate(close,2) as close, " +
+				"truncate(high,2) as high, " +
+				"truncate(low,2) as low," +
+				"truncate(ma5,2) as ma5," +
+				"truncate(ma10,2) as ma10, " +
+				"truncate(ma20,2) as ma20, " +
+				"truncate(ma30,2) as ma30, " +
+				"truncate(ma60,2) as ma60, " +
+				"truncate(ma120,2) as ma120, " +
+				"truncate(upper,2) as upper, " +
+				"truncate(mid,2) as mid, " +
+				"truncate(lower,2) as lower, " +
+				"truncate(bbi,2) as bbi, " +
+				"truncate(ema13,2) as ema13, " +
+				"truncate(ema26,2) as ema26, " +
+				"truncate(diff,2) as diff, " +
+				"truncate(dea,2) as dea, " +
+				"truncate(macd,2) as macd " +
+				"from  " + BTC_PRICE_TABLE + "_" + pair + "__" + this.data_cycle + " where data_complete = 1";
 		if (time_s != null) {
 			sql += " and time >= '" + time_s + "'";
 		}
