@@ -243,6 +243,7 @@ public class BTCDataProcThread extends Thread {
 		cycle_to_int.put("M1", 60);
 		cycle_to_int.put("M5", 300);
 		cycle_to_int.put("M10", 600);
+		cycle_to_int.put("H1", 3600);
 		
 		//处理更新历史数据
 		if (args.length != 5) {
