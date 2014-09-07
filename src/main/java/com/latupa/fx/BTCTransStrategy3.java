@@ -456,27 +456,62 @@ public class BTCTransStrategy3 implements BTCTransStrategy {
 		boolean is_buy = false;
 		int ret = 0;
 		
-//		if (this.is_macd_changeto_red &&
-//				this.is_up_boll_mid &&
-//				this.is_k_yangxian) {
-//			StatusChange(STATUS.BUYIN, "boll_up && up_ma60 && k_yangxian && macd_red_to_long", sDateTime, 0);
-//			ret = CONTIDION_200;
-//			is_buy = true;
+		//低位二次金叉
+//hold		if (this.is_double_gold_cross) {
+//			ret = CONTIDION_DOUBLE_CROSS;
+//			is_buy	= true;
+//			this.curt_status	= STATUS.BUYIN;
+//			log.info("TransProcess: time:" + sDateTime + ", price:" + df1.format(this.curt_price) + ", buy for double_gold_cross, status from " + STATUS.READY + " to " + this.curt_status);
 //		}
 		
-		if (//this.is_boll_up &&
-				this.is_up_boll_mid &&
-				this.is_up_ma60 &&
-				this.is_macd_red_to_long &&
-				this.is_k_yangxian) {
-					StatusChange(STATUS.BUYIN, "boll_up && up_ma60 && k_yangxian && macd_red_to_long", sDateTime, 0);
-					ret = CONTIDION_200;
-					is_buy = true;
+		//macd变红
+		if (this.is_macd_changeto_red &&
+				this.is_up_boll_mid) {
+			StatusChange(STATUS.BUYIN, "macd to red && up boll mid", sDateTime, 0);
+			ret = CONTIDION_MACD_TO_RED;
+			is_buy = true;
 		}
+		
+		//均线支撑
+		if (this.is_ma_support) {
+//		if (this.is_ma_support) {
+//			if (this.is_macd_up) {
+//				ret = CONTIDION_MA_MACD_UP;
+//				is_buy	= true;
+//				this.curt_status	= STATUS.BUYIN;
+//				log.info("TransProcess: time:" + sDateTime + ", price:" + df1.format(this.curt_price) + ", buy for ma_support && macd_up, status from " + STATUS.READY + " to " + this.curt_status);
+//			}
+			
+			if (this.is_boll_up) {
+				StatusChange(STATUS.BUYIN, "ma_support && boll_up", sDateTime, 0);
+				ret = CONTIDION_MA_BOLL_UP;
+				is_buy	= true;
+			}
+		}
+		
+		if (this.is_macd_up) {
+			if (this.is_last_boll_mid_down) {
+				StatusChange(STATUS.BUYIN, "macd up && mid down", sDateTime, 0);
+				ret = CONTIDION_MID_DOWN_MACD_UP;
+			}
+			else if (this.is_ma_bull_arrange) {
+				StatusChange(STATUS.BUYIN, "macd up && bull", sDateTime, 0);
+				ret = CONTIDION_BULL_MACD_UP;
+			}
+			is_buy	= true;
+		}
+		
+		//多重底
+//hold		if (this.is_multi_macd_bottom) {
+//			ret = CONTIDION_MULTI_BOTTOM;
+//			is_buy	= true;
+//			this.curt_status = STATUS.BUYIN;
+//			log.info("TransProcess: time:" + sDateTime + ", price:" + df1.format(this.curt_price) + ", buy for multi_macd_bottom, status from " + STATUS.READY + " to " + this.curt_status);
+//		}
 		
 		if (is_buy) {
 			if (this.is_ma_bull_arrange) {
-				this.curt_status = STATUS.BULL;
+				this.curt_status	= STATUS.BULL;
 				log.info("TransProcess: status from " + STATUS.BUYIN + " to " + this.curt_status);
 			}
 			
