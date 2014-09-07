@@ -464,7 +464,8 @@ public class BTCTransStrategy3 implements BTCTransStrategy {
 //			is_buy = true;
 //		}
 		
-		if (this.is_boll_up &&
+		if (//this.is_boll_up &&
+				this.is_up_boll_mid &&
 				this.is_up_ma60 &&
 				this.is_macd_red_to_long &&
 				this.is_k_yangxian) {

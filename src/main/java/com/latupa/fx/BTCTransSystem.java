@@ -282,8 +282,8 @@ public class BTCTransSystem {
 			sell_quantity = this.btc_curt_quantity * (double)sell_position / 10;
 			
 			this.btc_curt_quantity		-= sell_quantity;
-			this.btc_sell_price			= price - 3;  //卖出的时候计算点差
-//			this.btc_sell_price			= price;
+//			this.btc_sell_price			= price - 3;  //卖出的时候计算点差
+			this.btc_sell_price			= price;
 			sell_volumn					= (sell_quantity * this.btc_sell_price);
 			this.btc_accumulate_volumn	+= sell_volumn;
 			
@@ -298,7 +298,7 @@ public class BTCTransSystem {
 				sell_quantity, 
 				this.btc_sell_price);
 		
-		DecimalFormat df1 = new DecimalFormat("#0.00000");
+		DecimalFormat df1 = new DecimalFormat("#0.00");
 		log.info("TransProcess[SELL]: quantity:" + df1.format(sell_quantity) +
 				", price:" + df1.format(this.btc_sell_price) +
 				", volumn:" + df1.format(sell_volumn) +
@@ -402,7 +402,7 @@ public class BTCTransSystem {
 				this.btc_curt_quantity, 
 				this.btc_buy_price);
 		
-		DecimalFormat df1 = new DecimalFormat("#0.00000");
+		DecimalFormat df1 = new DecimalFormat("#0.00");
 		log.info("TransProcess[BUY]: quantity:" + df1.format(this.btc_curt_quantity) +
 				", price:" + df1.format(this.btc_buy_price) +
 				", volumn:" + df1.format(this.btc_buy_volumn) +
@@ -610,7 +610,7 @@ public class BTCTransSystem {
 	 */
 	public void RecordForDay(String sDateTime, BTCTotalRecord record, UserInfo user_info) {
 		
-		DecimalFormat df1 = new DecimalFormat("#0.00000");
+		DecimalFormat df1 = new DecimalFormat("#0.00");
 		
 		String curt_day = sDateTime.substring(0, 8);
 		
@@ -645,7 +645,7 @@ public class BTCTransSystem {
 	 */
 	public void RecordForMonth(String sDateTime, BTCTotalRecord record, UserInfo user_info) {
 		
-		DecimalFormat df1 = new DecimalFormat("#0.00000");
+		DecimalFormat df1 = new DecimalFormat("#0.00");
 		
 		String curt_month = sDateTime.substring(0, 6);
 		
@@ -680,7 +680,7 @@ public class BTCTransSystem {
 	 */
 	public void RecordForYear(String sDateTime, BTCTotalRecord record, UserInfo user_info) {
 		
-		DecimalFormat df1 = new DecimalFormat("#0.00000");
+		DecimalFormat df1 = new DecimalFormat("#0.00");
 		
 		String curt_year = sDateTime.substring(0, 4);
 		
