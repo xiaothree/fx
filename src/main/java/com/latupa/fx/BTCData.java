@@ -697,7 +697,7 @@ public class BTCData {
 				"truncate(diff,2) as diff, " +
 				"truncate(dea,2) as dea, " +
 				"truncate(macd,2) as macd " +
-				"from  btc_price__300 where data_complete = 1";
+				"from  btc_price__600 where data_complete = 1";
 				//"from  " + BTC_PRICE_TABLE + "_" + pair + "__" + this.data_cycle + " where data_complete = 1";
 		if (time_s != null) {
 			sql += " and time >= '" + time_s + "'";

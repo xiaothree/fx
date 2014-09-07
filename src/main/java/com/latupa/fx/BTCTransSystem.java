@@ -284,7 +284,8 @@ public class BTCTransSystem {
 			this.btc_curt_quantity		-= sell_quantity;
 //			this.btc_sell_price			= price - 3;  //卖出的时候计算点差
 			this.btc_sell_price			= price;
-			sell_volumn					= (sell_quantity * this.btc_sell_price);
+//			sell_volumn					= (sell_quantity * this.btc_sell_price);
+			sell_volumn					= (sell_quantity * this.btc_sell_price) * 0.999;//以万十的交易手续费算
 			this.btc_accumulate_volumn	+= sell_volumn;
 			
 			this.btc_profit				+= (sell_volumn - this.btc_buy_price * sell_quantity); 
