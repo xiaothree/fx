@@ -53,7 +53,7 @@ public class BTCTransSystem {
 	public double btc_curt_amount; 
 	
 	//入场成交量
-	public double btc_buy_volumn;
+	public double btc_buy_amount;
 	
 	//当前仓位(1-10)成
 	public int btc_curt_position;
@@ -64,18 +64,31 @@ public class BTCTransSystem {
 	//初始资金
 	public final double BTC_INIT_AMOUNT = 10000;
 	
+	//买入价格
 	public double btc_buy_price;
+	
+	//买入理由
 	public int btc_buy_reason;
+	
+	//卖出价格
 	public double btc_sell_price;
+	
+	//单次买卖利润（以买入到全部卖出为一个周期）
 	public double btc_profit;
+	
+	//累计利润
 	public double btc_accumulate_profit;
 	
-	public int btc_trans_succ_count;
+	//交易赚钱的次数
+	public int btc_trans_succ_count;	
+	
+	//总交易次数
 	public int btc_trans_count;
 	
-	public final double BTC_FEE	= 0.003;
-	public double btc_accumulate_volumn;
+	//交易成本，卖出时候扣除，万分之多少
+	public final int TRADE_FEE = 8; 
 	
+	//记录买入的时间
 	public String btc_time_buyin;
 	
 	//记录初始信息
@@ -152,13 +165,12 @@ public class BTCTransSystem {
 		this.btc_curt_quantity	= 0;
 		this.btc_curt_position	= 0;
 		
-		this.btc_buy_volumn	= 0;
+		this.btc_buy_amount	= 0;
 		
 		this.btc_profit				= 0;
 		this.btc_accumulate_profit	= 0;
 		this.btc_trans_succ_count	= 0;
 		this.btc_trans_count		= 0;
-		this.btc_accumulate_volumn	= 0;
 		
 		this.btc_day_time_init		= null;
 		this.btc_day_amount_init 	= this.BTC_INIT_AMOUNT;
@@ -242,7 +254,7 @@ public class BTCTransSystem {
 		this.btc_curt_position *= (1 - (double)sell_position / 10);
 		
 		double sell_quantity	= 0;
-		double sell_volumn		= 0;
+		double sell_amount		= 0;
 		
 		if (this.mode == MODE.ACTUAL && this.trade_mode == true) {//实盘（真实交易）
 			try {
@@ -255,16 +267,15 @@ public class BTCTransSystem {
 					double sum_profit = 0;
 					for (TradeRet tr : tr_list) {
 						sell_quantity	+= tr.deal_amount;
-						sell_volumn		+= (tr.deal_amount * tr.avg_price);
+						sell_amount		+= (tr.deal_amount * tr.avg_price);
 						sum_profit		+= (tr.avg_price - this.btc_buy_price) * tr.deal_amount;
 						sum_price		+= tr.avg_price;
 					}
 					
 					this.btc_curt_quantity		-= sell_quantity;
 					this.btc_sell_price			= sum_price / tr_list.size();
-					this.btc_accumulate_volumn	+= sell_volumn;
 					this.btc_profit				+= sum_profit;
-					this.btc_curt_amount		+= sell_volumn;
+					this.btc_curt_amount		+= sell_amount;
 					
 					log.info("profit up to now from this buy in is :" + this.btc_profit);
 				}
@@ -282,13 +293,12 @@ public class BTCTransSystem {
 			sell_quantity = this.btc_curt_quantity * (double)sell_position / 10;
 			
 			this.btc_curt_quantity		-= sell_quantity;
-			this.btc_sell_price			= price - 3;  //卖出的时候计算点差
-			sell_volumn					= (sell_quantity * this.btc_sell_price);
-			this.btc_accumulate_volumn	+= sell_volumn;
+			this.btc_sell_price			= price;
+			sell_amount					= (sell_quantity * this.btc_sell_price);
+			double fee					= (sell_amount * TRADE_FEE / 10000);//计算卖出时扣除的佣金
+			this.btc_profit				+= (sell_amount - fee - this.btc_buy_price * sell_quantity); 
 			
-			this.btc_profit				+= (sell_volumn - this.btc_buy_price * sell_quantity); 
-			
-			this.btc_curt_amount		+= sell_volumn;
+			this.btc_curt_amount		+= (sell_amount - fee);
 		}
 		
 		this.btc_trans_rec.InsertTransDetail(this.fx_pair + "_" + this.btc_trans_postfix,
@@ -300,7 +310,7 @@ public class BTCTransSystem {
 		DecimalFormat df1 = new DecimalFormat("#0.00000");
 		log.info("TransProcess[SELL]: quantity:" + df1.format(sell_quantity) +
 				", price:" + df1.format(this.btc_sell_price) +
-				", volumn:" + df1.format(sell_volumn) +
+				", volumn:" + df1.format(sell_amount) +
 				", curt position:" + this.btc_curt_position);
 		
 		if (this.btc_curt_position == 0) {//如果清仓
@@ -316,8 +326,8 @@ public class BTCTransSystem {
 			
 			this.btc_trans_rec.InsertTrans(this.fx_pair + "_" + this.btc_trans_postfix,
 					sDateTime, 
-					this.btc_buy_volumn, 
-					this.btc_buy_volumn + this.btc_profit, 
+					this.btc_buy_amount, 
+					this.btc_buy_amount + this.btc_profit, 
 					this.btc_profit,
 					this.btc_buy_reason,
 					this.btc_buy_price,
@@ -326,7 +336,7 @@ public class BTCTransSystem {
 		
 			log.info("TransProcess[SUMMARY]: " + "time:" + this.btc_time_buyin + "-" + sDateTime + 
 					", btc_price:" + df1.format(this.btc_buy_price) + "->" + df1.format(this.btc_sell_price) + "(" + df1.format(this.btc_sell_price - this.btc_buy_price) + "," + df1.format((this.btc_sell_price - this.btc_buy_price) / this.btc_buy_price * 100) + "%)" + 
-					", volumn:" + df1.format(this.btc_buy_volumn) + "->" + df1.format(this.btc_buy_volumn + this.btc_profit) + "(" + df1.format(this.btc_profit) + "," + df1.format(this.btc_profit / this.btc_buy_volumn * 100) + "%)" + 
+					", volumn:" + df1.format(this.btc_buy_amount) + "->" + df1.format(this.btc_buy_amount + this.btc_profit) + "(" + df1.format(this.btc_profit) + "," + df1.format(this.btc_profit / this.btc_buy_amount * 100) + "%)" + 
 					", amount:" + df1.format(this.btc_curt_amount) +
 //					", accu profit:" + df1.format(this.btc_accumulate_profit) + "(" + df1.format(this.btc_accumulate_profit / this.btc_amount_init * 100) + "%)" +
 					", accu profit:" + df1.format(this.btc_curt_amount - this.btc_amount_init) + "(" + df1.format((this.btc_curt_amount - this.btc_amount_init) / this.btc_amount_init * 100) + "%)" +
@@ -354,18 +364,17 @@ public class BTCTransSystem {
 				if (tr_list != null && tr_list.size() > 0) {
 					
 					this.btc_curt_quantity = 0;
-					this.btc_buy_volumn = 0;
+					this.btc_buy_amount = 0;
 					
 					double sum_price	= 0;
 					for (TradeRet tr : tr_list) {	
 						this.btc_curt_quantity	+= tr.deal_amount;
-						this.btc_buy_volumn		+= (tr.deal_amount * tr.avg_price);
+						this.btc_buy_amount		+= (tr.deal_amount * tr.avg_price);
 						sum_price				+= tr.avg_price;
 					}
 					
-					this.btc_accumulate_volumn += this.btc_buy_volumn;
 					this.btc_buy_price			= sum_price / tr_list.size();
-					this.btc_curt_amount	   -= this.btc_buy_volumn;
+					this.btc_curt_amount	   -= this.btc_buy_amount;
 				}
 				else {
 					log.error("buy action failed!");
@@ -382,12 +391,12 @@ public class BTCTransSystem {
 			
 //			double buy_amount = this.btc_curt_amount * (1 - 0.0003);  //计算交易点差，用于外汇
 			
-			double buy_amount = this.btc_curt_amount;
-			this.btc_curt_quantity		= buy_amount / price;
-			this.btc_buy_volumn 		= buy_amount;
-			this.btc_accumulate_volumn += buy_amount;
+			double buy_amount 			= this.btc_curt_amount;
 			this.btc_buy_price			= price;
-			this.btc_curt_amount	    = buy_amount - this.btc_buy_volumn;
+			this.btc_buy_amount 		= buy_amount;
+			this.btc_curt_quantity		= this.btc_buy_amount / this.btc_buy_price;
+			
+			this.btc_curt_amount		-= this.btc_buy_amount;
 		}
 		
 		this.btc_curt_position = 10;
@@ -404,7 +413,7 @@ public class BTCTransSystem {
 		DecimalFormat df1 = new DecimalFormat("#0.00000");
 		log.info("TransProcess[BUY]: quantity:" + df1.format(this.btc_curt_quantity) +
 				", price:" + df1.format(this.btc_buy_price) +
-				", volumn:" + df1.format(this.btc_buy_volumn) +
+				", volumn:" + df1.format(this.btc_buy_amount) +
 				", position:" + this.btc_curt_position);
 		
 		return true;
