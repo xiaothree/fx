@@ -7,6 +7,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,8 +44,9 @@ public class BTCTransSystem {
 	//交易模式：true->真实交易；false->模拟交易
 	public boolean trade_mode;
 	
-	//K线周期(s)
+	//K线周期(秒)
 	public int data_cycle;	
+	public String data_cycle_desc; //K线周期描述符
 	
 	//当前BTC份数
 	public double btc_curt_quantity;
@@ -131,8 +133,9 @@ public class BTCTransSystem {
 	
 	public String btc_trans_postfix;
 	
-	public BTCTransSystem(int data_cycle, String fx_pair, MODE mode, String context, String time_s, String time_e) {
-		this.data_cycle	= data_cycle;
+	public BTCTransSystem(int data_cycle, String data_cycle_desc, String fx_pair, MODE mode, String context, String time_s, String time_e) {
+		this.data_cycle	= data_cycle * 60;
+		this.data_cycle_desc = data_cycle_desc;
 		this.fx_pair	= fx_pair;
 		this.mode		= mode;
 		this.review_time_s	= time_s;
@@ -140,7 +143,7 @@ public class BTCTransSystem {
 		
 		ArrayList<String> pairs_list = new ArrayList<String>();
 		pairs_list.add(this.fx_pair);
-		this.btc_data	= new BTCData(this.data_cycle, pairs_list);
+		this.btc_data	= new BTCData(this.data_cycle_desc, pairs_list);
 		
 		this.btc_trans_rec	= new BTCTransRecord(this.btc_data.dbInst);
 		
@@ -154,7 +157,7 @@ public class BTCTransSystem {
 		else {
 			this.btc_trans_postfix = "virtual";
 		}
-		this.btc_trans_rec.InitTable(this.fx_pair + "_" + this.btc_trans_postfix);
+		this.btc_trans_rec.InitTable(this.fx_pair + "_" + this.data_cycle_desc + "_" + this.btc_trans_postfix);
 		
 		ContextInit();
 		InitTransMode();
@@ -812,11 +815,17 @@ public class BTCTransSystem {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		
-		//K线周期，运行模式， 外汇对，标识（只有复盘有用），[复盘起始时间]， [复盘结束时间]
-		int data_cycle = Integer.parseInt(args[0]);
-		String fx_pair = args[1];
-		MODE mode = MODE.values()[Integer.parseInt(args[2])];//0-REVIEW;1-ACTUAL
-		String context = args[3];
+		//K线周期（分钟）
+		HashMap<String, Integer> cycle_to_int = new HashMap<String, Integer>();
+		cycle_to_int.put("H1", 60);
+		cycle_to_int.put("H2", 120);
+		cycle_to_int.put("D1", 330);  //A股一天开盘4个小时，加上中间休息的1个半小时，总共5个半小时
+		
+		//K线周期，pair(market_code)，运行模式 ，标识（只有复盘有用），[复盘起始时间]， [复盘结束时间]
+		String data_cycle_desc	= args[0];
+		String fx_pair 	= args[1];
+		MODE mode 		= MODE.values()[Integer.parseInt(args[2])];//0-REVIEW;1-ACTUAL
+		String context 	= args[3];
 		
 		String time_s = null;
 		String time_e = null;
@@ -828,9 +837,9 @@ public class BTCTransSystem {
 			time_e = args[5];
 		}
 		
-		System.out.println("para:" + data_cycle + "," + fx_pair + ", " + mode + "," + context + "," + time_s + "," + time_e);
+		System.out.println("para:" + data_cycle_desc + "," + fx_pair + ", " + mode + "," + context + "," + time_s + "," + time_e);
 		
-		BTCTransSystem btc_ts = new BTCTransSystem(data_cycle, fx_pair, mode, context, time_s, time_e);
+		BTCTransSystem btc_ts = new BTCTransSystem(cycle_to_int.get(data_cycle_desc), data_cycle_desc, fx_pair, mode, context, time_s, time_e);
 		btc_ts.Route();
 	}
 }

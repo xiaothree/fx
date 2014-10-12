@@ -106,11 +106,11 @@ public class BTCData {
 	public static final String FLAG_FILE_DIR = "src/main/resources/";
 	public static final String dbconf_file = "db.flag";
 	
-	public static final String BTC_PRICE_TABLE = "oanda_price";
-	public static final String BTC_TRANS_TABLE = "oanda_trans";
+	public static final String BTC_PRICE_TABLE = "stock_price";
+	public static final String BTC_TRANS_TABLE = "stock_trans";
 	
 	//K线周期
-	public int data_cycle;
+	public String data_cycle;//K线周期描述，用于建表
 	
 	//用于生成伪随机值
 	public double price_mock;
@@ -123,7 +123,7 @@ public class BTCData {
 	public TreeMap<String, BTCTotalRecord> btc_mock_map = new TreeMap<String, BTCTotalRecord>();
 	public Iterator<String> btc_mock_it;
 	
-	public BTCData(int data_cycle, ArrayList<String> pairs_list) {
+	public BTCData(String data_cycle, ArrayList<String> pairs_list) {
 		this.data_cycle = data_cycle;
 		
 		this.dbInst	= ConnectDB();
@@ -432,11 +432,10 @@ public class BTCData {
 	 * 计算Macd
 	 * @param btc_func
 	 * @param time
-	 * @param cycle_data
 	 * @return
 	 * @throws ParseException 
 	 */
-	public MacdRet BTCCalcMacd(BTCFunc btc_func, String time, int cycle_data, String pair) throws ParseException {
+	public MacdRet BTCCalcMacd(BTCFunc btc_func, String time, String pair) throws ParseException {
 		return btc_func.macd(this, time, pair);
 	}
 	
@@ -549,6 +548,33 @@ public class BTCData {
 //			record.Show();
 //		}
 //		log.info(b_record_map.size() + " records");
+	}
+	
+	/**
+	 * 更新股票的slice record值
+	 * @param record_map
+	 */
+	public synchronized void BTCSliceHistoryStockUpdate(HashMap<String, BTCBasicRecord> record_map) {
+		
+		for (String pair : record_map.keySet()) {
+			BTCDSliceRecord s_record = this.btc_s_record_map.get(pair);
+			BTCBasicRecord record = record_map.get(pair);
+			
+			if (s_record.init_flag == true) {
+				s_record.high	= record.high;
+				s_record.low	= record.low;
+				s_record.open	= record.open;
+				s_record.close	= record.close;
+				s_record.init_flag	= false;
+			}
+			else {
+				s_record.high	= (record.high > s_record.high) ? record.high : s_record.high;
+				s_record.low	= (record.low < s_record.low) ? record.low : s_record.low;
+				s_record.close	= record.close;
+			}
+		}
+		
+		return;
 	}
 	
 	/**
