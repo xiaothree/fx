@@ -304,7 +304,7 @@ public class BTCTransSystem {
 			this.btc_curt_amount		+= (sell_amount - fee);
 		}
 		
-		this.btc_trans_rec.InsertTransDetail(this.fx_pair + "_" + this.btc_trans_postfix,
+		this.btc_trans_rec.InsertTransDetail(this.fx_pair + "_" + this.data_cycle_desc + "_" + this.btc_trans_postfix,
 				sDateTime, 
 				BTCTransRecord.OPT.OPT_SELL, 
 				sell_quantity, 
@@ -327,7 +327,7 @@ public class BTCTransSystem {
 			//更新总金额
 			this.btc_accumulate_profit	+= this.btc_profit;
 			
-			this.btc_trans_rec.InsertTrans(this.fx_pair + "_" + this.btc_trans_postfix,
+			this.btc_trans_rec.InsertTrans(this.fx_pair + "_" + this.data_cycle_desc + "_" + this.btc_trans_postfix,
 					sDateTime, 
 					this.btc_buy_amount, 
 					this.btc_buy_amount + this.btc_profit, 
@@ -407,7 +407,7 @@ public class BTCTransSystem {
 		this.btc_time_buyin	= sDateTime;
 		this.btc_buy_reason	= reason;
 		
-		this.btc_trans_rec.InsertTransDetail(this.fx_pair + "_" + this.btc_trans_postfix,
+		this.btc_trans_rec.InsertTransDetail(this.fx_pair + "_" + this.data_cycle_desc + "_" + this.btc_trans_postfix,
 				sDateTime, 
 				BTCTransRecord.OPT.OPT_BUY, 
 				this.btc_curt_quantity, 

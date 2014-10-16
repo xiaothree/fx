@@ -14,18 +14,23 @@
 
 	// As we have minutely data, we should set minPeriod to "mm"
 	var categoryAxesSettings = new AmCharts.CategoryAxesSettings();
+
 	categoryAxesSettings.minPeriod = "mm"; //指定数据的最小时间间隔是分钟
 	categoryAxesSettings.groupToPeriods = ["mm"];//指定按照分钟聚合，也就是说不聚合
+	categoryAxesSettings.equalSpacing= true;//跳过没有数据的时间周期
 	categoryAxesSettings.position = "bottom"; 
+
 	//底部时间轴静态显示格式
+	//拖动底部时间轴产生的时间粒度变化，下面的定义用于显示不同时间粒度的格式
 	categoryAxesSettings.dateFormats = [{period:'fff',format:'JJ:NN:SS'},
 		{period:'ss',format:'JJ:NN:SS'},
 		{period:'mm',format:'DD JJ:NN'},
-		{period:'hh',format:'JJ:NN'},
-		{period:'DD',format:'MMM DD'},
-		{period:'WW',format:'MMM DD'},
-		{period:'MM',format:'MMM'},
+		{period:'hh',format:'YY/MM/DD JJ:NN'},
+		{period:'DD',format:'YY/MM/DD'},
+		{period:'WW',format:'YY/MM/DD'},
+		{period:'MM',format:'YY/MM'},
 		{period:'YYYY',format:'YYYY'}];
+
 	chart.categoryAxesSettings = categoryAxesSettings;
 
 	// DATASET //////////////////////////////////////////
@@ -81,6 +86,9 @@
 	}, {
 		fromField: "ma120",
 		toField: "ma120"
+	}, {
+		fromField: "time_day",
+		toField: "time_day"
 	}];
 	dataSet.color = "#7f8da9";
 	dataSet.dataProvider = chartData;
@@ -107,7 +115,7 @@
 	graph.negativeLineColor = "#db4c3c";
 	graph.negativeFillColors = "#db4c3c";
 	graph.fillAlphas = 1;
-	graph.balloonText = "open:<b>[[open]]</b><br>close:<b>[[close]]</b><br>low:<b>[[low]]</b><br>high:<b>[[high]]</b>";
+	graph.balloonText = "date:<b>[[time_day]]</b><br>open:<b>[[open]]</b><br>close:<b>[[close]]</b><br>low&nbsp;&nbsp;:<b>[[low]]</b><br>high:<b>[[high]]</b>";
 	graph.legendAlpha = 1;
 	graph.legendColor = "#FCF930";
 	graph.visibleInLegend = true;
@@ -460,7 +468,8 @@
 		ma20: ma20,
 		ma30: ma30,
 		ma60: ma60,
-		ma120: ma120
+		ma120: ma120,
+		time_day: time_day
 		});
 	}  
 	//alert(count);

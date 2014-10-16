@@ -83,6 +83,8 @@ public class BTCDataProcThread extends Thread {
 	        	String date = items[0].replace("/", "-");
 	        	String time = items[1];
 	        	
+//	        	System.out.println(date + "," +time);
+	        	
 	        	BTCBasicRecord cycle_5_k = new BTCBasicRecord();
 	        	cycle_5_k.open = Double.parseDouble(items[2]);
 	        	cycle_5_k.high = Double.parseDouble(items[3]);
@@ -97,6 +99,8 @@ public class BTCDataProcThread extends Thread {
 	    		HashMap<String, BTCBasicRecord> pair_map = new HashMap<String, BTCBasicRecord>();
 				pair_map.put(pair, cycle_5_k);
 	    		this.btc_data.BTCSliceHistoryStockUpdate(pair_map);
+	    		
+//	    		System.out.println(stamp_5_k + ", " + stamp + ", " + (stamp_5_k - stamp));
 	    		
 	    		//如果有几天的数据跳空，那么在这里时间窗口向后移动
 	    		while (stamp_5_k - stamp > 24 * 60 * 60) {

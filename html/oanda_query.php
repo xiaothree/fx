@@ -3,8 +3,8 @@
 	define ("MYSQL_HOST", "127.0.0.1");
 	define ("MYSQL_NAME", "latupa");
 	define ("MYSQL_PASSWORD", "latupa");
-	define ("MYSQL_DB", "oanda");
-	define ("TABLE_PRE", "oanda_price_");
+	define ("MYSQL_DB", "stock");
+	define ("TABLE_PRE", "stock_price_");
 
 	function query_summary_daily($pair, $table_postfix, $start, $end, $range) {
 

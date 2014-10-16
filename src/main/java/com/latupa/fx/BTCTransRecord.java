@@ -21,8 +21,8 @@ public class BTCTransRecord {
 	//数据库连接
 	public DBInst dbInst;  
 	
-	public static final String BTC_TRANS_TABLE = "oanda_trans";
-	public static final String BTC_TRANS_DETAIL_TABLE = "oanda_trans_detail";
+	public static final String BTC_TRANS_TABLE = "stock_trans";
+	public static final String BTC_TRANS_DETAIL_TABLE = "stock_trans_detail";
 	
 	public BTCTransRecord(DBInst dbInst) {
 		this.dbInst	= dbInst;
