@@ -452,7 +452,7 @@ public class BTCTransStrategy3 implements BTCTransStrategy {
 		if (this.is_macd_changeto_red &&
 				this.is_up_boll_mid) {
 			StatusChange(STATUS.BUYIN, "macd to red && up boll mid", sDateTime, 0);
-			ret = CONTIDION_MACD_TO_RED;
+			ret |= CONTIDION_MACD_TO_RED;
 			is_buy = true;
 		}
 		
@@ -468,7 +468,7 @@ public class BTCTransStrategy3 implements BTCTransStrategy {
 			
 			if (this.is_boll_up) {
 				StatusChange(STATUS.BUYIN, "ma_support && boll_up", sDateTime, 0);
-				ret = CONTIDION_MA_BOLL_UP;
+				ret |= CONTIDION_MA_BOLL_UP;
 				is_buy	= true;
 			}
 		}
@@ -476,11 +476,11 @@ public class BTCTransStrategy3 implements BTCTransStrategy {
 		if (this.is_macd_up) {
 			if (this.is_last_boll_mid_down) {
 				StatusChange(STATUS.BUYIN, "macd up && mid down", sDateTime, 0);
-				ret = CONTIDION_MID_DOWN_MACD_UP;
+				ret |= CONTIDION_MID_DOWN_MACD_UP;
 			}
 			else if (this.is_ma_bull_arrange) {
 				StatusChange(STATUS.BUYIN, "macd up && bull", sDateTime, 0);
-				ret = CONTIDION_BULL_MACD_UP;
+				ret |= CONTIDION_BULL_MACD_UP;
 			}
 			is_buy	= true;
 		}
@@ -536,13 +536,13 @@ public class BTCTransStrategy3 implements BTCTransStrategy {
 					sell_position = 5;
 				}
 			}
-			else if (this.buy_reason == CONTIDION_MA_BOLL_UP && 
+			else if (((this.buy_reason & CONTIDION_MA_BOLL_UP) == CONTIDION_MA_BOLL_UP) && 
 					this.num_first_yin == 1 &&
 					this.is_up_yin) {
 				StatusChange(STATUS.HALF, "up yin in bull", sDateTime, 1);
 				sell_position = 5;
 			}
-			else if (this.buy_reason == CONTIDION_MA_BOLL_UP && 
+			else if (((this.buy_reason & CONTIDION_MA_BOLL_UP) == CONTIDION_MA_BOLL_UP) && 
 					this.num_first_yin == 1 &&
 					this.is_down_last_open) {
 				StatusChange(STATUS.HALF, "down last open in bull", sDateTime, 1);
@@ -564,13 +564,13 @@ public class BTCTransStrategy3 implements BTCTransStrategy {
 					sell_position = 5;	
 				}
 			}
-			else if (this.buy_reason == CONTIDION_MA_BOLL_UP && 
+			else if (((this.buy_reason & CONTIDION_MA_BOLL_UP) == CONTIDION_MA_BOLL_UP) && 
 					this.num_first_yin == 1 &&
 					this.is_up_yin) {
 				StatusChange(STATUS.HALF, "up yin in buy", sDateTime, 1);
 				sell_position = 5;
 			}
-			else if (this.buy_reason == CONTIDION_MA_BOLL_UP && 
+			else if (((this.buy_reason & CONTIDION_MA_BOLL_UP) == CONTIDION_MA_BOLL_UP) && 
 					this.num_first_yin == 1 &&
 					this.is_down_last_open) {
 				StatusChange(STATUS.HALF, "down last open in buy", sDateTime, 1);
