@@ -13,7 +13,7 @@
 		require_once("oanda_query.php");
 
 		function usage() {
-			echo "oanda_graph.php?pair=sh000001&data_cycle=[D1|H2|H1]&start=yyyymmddhhmmss&end=[yyyymmddhhmmss]&range=[ndays]\n";
+			echo "oanda_graph.php?pair=sh000001&data_cycle=[D1|H2|H1|M5|M10]&start=yyyymmddhhmmss&end=[yyyymmddhhmmss]&range=[ndays]\n";
 		}
 
 		if (!isset($_GET["pair"]) || !isset($_GET["data_cycle"]) || !isset($_GET["start"])) {
@@ -22,7 +22,7 @@
 		}
 
 		$data_cycle = $_GET["data_cycle"];
-		if ($data_cycle != "D1" && $data_cycle != "H2" && $data_cycle != "H1") {
+		if ($data_cycle != "D1" && $data_cycle != "H2" && $data_cycle != "H1" && $data_cycle != "M5" && $data_cycle != "M10") {
 			usage();
 			exit;
 		}
