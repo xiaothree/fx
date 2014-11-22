@@ -819,6 +819,7 @@ public class BTCTransSystem {
 		HashMap<String, Integer> cycle_to_int = new HashMap<String, Integer>();
 		cycle_to_int.put("M5", 5);
 		cycle_to_int.put("M10", 10);
+		cycle_to_int.put("M30", 30);
 		cycle_to_int.put("H1", 60);
 		cycle_to_int.put("H2", 120);
 		cycle_to_int.put("D1", 330);  //A股一天开盘4个小时，加上中间休息的1个半小时，总共5个半小时
